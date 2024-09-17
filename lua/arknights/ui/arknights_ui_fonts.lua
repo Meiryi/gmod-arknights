@@ -18,10 +18,10 @@ surface.CreateFont("Arknights_Common_Small_2x", {
 	antialias = true,
 })
 
-surface.CreateFont("Arknights_Common_Small_2x", {
+surface.CreateFont("Arknights_Common_Small_3x", {
 	font = "Bender",
 	extended = false,
-	size = AKScreenScaleH(8),
+	size = AKScreenScaleH(10),
 	weight = 500,
 	blursize = 0,
 	scanlines = 0,

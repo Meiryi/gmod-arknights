@@ -26,6 +26,7 @@ function Arknights.CreateFrame(parent, x, y, w, h, color)
         panel:SetDraggable(false)
         panel:SetTitle("")
         panel:ShowCloseButton(false)
+        panel:SetZPos(0)
         panel.Alpha = color.a
         panel.Paint = function()
             draw.RoundedBox(0, 0, 0, w, h, Color(color.r, color.g, color.b, panel.Alpha))
@@ -55,6 +56,7 @@ function Arknights.CreatePanel(parent, x, y, w, h, color, r)
         panel.Paint = function()
             draw.RoundedBox(r, 0, 0, w, h, color)
         end
+        panel:SetZPos(0)
     return panel
 end
 

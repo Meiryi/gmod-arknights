@@ -1,6 +1,36 @@
 Arknights.RespondingMenu = nil
 Arknights.SkipIntro = false
 
+function Arknights.GetScreenTexture()
+	return Arknights.RenderTarget
+end
+
+function Arknights.FadeTransition(func)
+	local ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	ui:SetZPos(32767)
+	local switch = false
+	local alpha = 0
+	ui.Paint = function()
+	if(!switch) then
+		alpha = math.Clamp(alpha + Arknights.GetFixedValue(12), 0, 255)
+		if(alpha >= 255) then
+			func()
+			switch = true
+		end
+	else
+		alpha = math.Clamp(alpha - Arknights.GetFixedValue(12), 0, 255)
+		if(alpha <= 0) then
+			ui:Remove()
+		end
+	end
+		draw.RoundedBox(0, 0, 0, ui:GetWide(), ui:GetTall(), Color(0, 0, 0, alpha))
+	end
+end
+
+function Arknights.IsWaitingRespond()
+	return IsValid(Arknights.FetchingPanel)
+end
+
 --[[
 	fulldim
 	midloading
@@ -68,7 +98,7 @@ function Arknights.LoadingScreen(loadingbg, funcs)
 	end
 end
 
-function Arknights.StartupSequence(data)
+function Arknights.StartupSequence(data, skip, suppressMusic)
 	local login_ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(255, 255, 255, 255))
 	local playsd = false
 	--[[
@@ -136,7 +166,7 @@ function Arknights.StartupSequence(data)
 	local ui = Arknights.CreateFrame(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 	login_ui:SetVisible(false)
 	login_ui.Paint = function()
-		if(!playsd) then
+		if(!playsd && !suppressMusic) then
 			Arknights.ShouldPlayMusic = true
 			Arknights.ResetMusicState()
 			Arknights.IdealMusic = "title02"
@@ -314,7 +344,11 @@ function Arknights.StartupSequence(data)
 			end
 		end
 	end
-
+	if(skip) then
+		login_ui:SetVisible(true)
+		ui:Remove()
+		return
+	end
 	local mats = {}
 	for k,v in ipairs(data) do
 		mats[k] = {
@@ -387,7 +421,7 @@ function Arknights.HomePage()
 		y1 = AKScrH() * 0.205,
 		y2 = AKScrH() * 0.4475,
 	}, function()
-	if(!ui.Active) then return end
+	if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		ui.Active = false
 		Arknights.ModeSelectionMenu(ui)
 		Arknights.ButtonClickSound("confirm")
@@ -400,7 +434,7 @@ function Arknights.HomePage()
 		y1 = AKScrH() * 0.455,
 		y2 = AKScrH() * 0.5825,
 	}, function()
-		if(!ui.Active) then return end
+		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		Arknights.ButtonClickSound("confirm")
 	end))
 	table.insert(buttons, Arknights.CreateMatButton3D2D(ui, AKScrW() * 0.145, AKScrH() * 0.455, w, h, Arknights.GetCachedMaterial("arknights/torappu/homepage/[uc]tm_rhodes_day/btn_squad.png"), {
@@ -409,7 +443,7 @@ function Arknights.HomePage()
 		y1 = AKScrH() * 0.455,
 		y2 = AKScrH() * 0.5825,
 	}, function()
-		if(!ui.Active) then return end
+		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		Arknights.ButtonClickSound("confirm")
 	end))
 	local w = AKScrW() * 0.1065
@@ -420,7 +454,7 @@ function Arknights.HomePage()
 		y1 = AKScrH() * 0.6,
 		y2 = AKScrH() * 0.7225,
 	}, function()
-		if(!ui.Active) then return end
+		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		Arknights.ButtonClickSound("confirm")
 	end))
 	table.insert(buttons, Arknights.CreateMatButton3D2D(ui, AKScrW() * 0.425 - (w - AKScreenScaleH(1)), AKScrH() * 0.595, w, h, Arknights.GetCachedMaterial("arknights/torappu/homepage/[uc]tm_rhodes_day/btn_recruit_normal.png"), {
@@ -429,7 +463,7 @@ function Arknights.HomePage()
 		y1 = AKScrH() * 0.6,
 		y2 = AKScrH() * 0.735,
 	}, function()
-		if(!ui.Active) then return end
+		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		Arknights.ButtonClickSound("confirm")
 	end))
 	local ow = w
@@ -441,7 +475,7 @@ function Arknights.HomePage()
 		y1 = AKScrH() * 0.595,
 		y2 = AKScrH() * 0.715,
 	}, function()
-		if(!ui.Active) then return end
+		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		Arknights.ButtonClickSound("confirm")
 	end))
 	local w = AKScrW() * 0.2015
@@ -513,6 +547,7 @@ function Arknights.HomePage()
 		surface.SetMaterial(rhodeslogo)
 		surface.DrawTexturedRect(-AKScrW() * 0.04, AKScrH() * 0.5 - rhodeslogosh * 0.5, rhodeslogosw, rhodeslogosh)
 	end
+	Arknights.GameFrame.MainMenu = ui
 end
 
 function Arknights.BackButton(parent, func)
@@ -554,11 +589,17 @@ function Arknights.ModeSelectionMenu(attachUI)
 	local x = AKScrW() * 0.25
 	local y = AKScrH() * 0.45
 	local customLevel = Arknights.CreateMatButton(ui, x - w * 0.5, y - h * 0.5, w, h, Arknights.GetCachedMaterial("arknights/meiryi/arts/ui/modeselect/customlevels.png"), function()
+		Arknights.ButtonClickSound("confirm")
+		Arknights.FadeTransition(function()
 
+		end)
 	end)
 	x = AKScrW() * 0.75
 	local levelMaker = Arknights.CreateMatButton(ui, x - w * 0.5, y - h * 0.5, w, h, Arknights.GetCachedMaterial("arknights/meiryi/arts/ui/modeselect/levelmaker.png"), function()
+		Arknights.ButtonClickSound("confirm")
+		Arknights.FadeTransition(function()
 
+		end)
 	end)
 
 	Arknights.BackButton(ui, function()
@@ -568,7 +609,71 @@ function Arknights.ModeSelectionMenu(attachUI)
 end
 
 Arknights.FetchingPanel = Arknights.FetchingPanel || nil
-function Arknights.FetchingIndicator()
-	local login_ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 
+function Arknights.RespondWaiting()
+	if(!IsValid(Arknights.FetchingPanel)) then return end
+	Arknights.FetchingPanel.Respond()
+end
+
+function Arknights.WaitingIndicator(supppressFallback)
+	local ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local tall = 0
+	local target_tall = AKScrH() * 0.125
+	local alphamul = 0
+	local timeout = Arknights.CurTimeUnScaled + 10
+	local responded = false
+	local timedout = false
+	local static_flash_size = AKScreenScaleH(28)
+	local static_X, static_Y = (AKScrW() * 0.5) - static_flash_size * 0.5,  (AKScrH() - target_tall) + (target_tall - static_flash_size) * 0.5
+	local flash_size = static_flash_size
+	local flash_alpha = 0
+	local flash_interval = 0.75
+	local flash_next_t = Arknights.CurTimeUnScaled + flash_interval
+	local flash_target_s = static_flash_size * 4
+	local flashmat = Arknights.GetCachedMaterial("arknights/torappu/loading/white_t.png")
+	ui:SetZPos(32767)
+	ui.Paint = function()
+		if(!responded && !timedout) then
+			tall = math.Clamp(tall + Arknights.GetFixedValue(12), 0, target_tall)
+			if(timeout < Arknights.CurTimeUnScaled) then
+				timedout = true
+			end
+		else
+			tall = math.Clamp(tall - Arknights.GetFixedValue(12), 0, target_tall)
+			if(tall <= 0) then
+				if(timedout && !supppressFallback) then -- Lost connection
+					Arknights.LoadingScreen("arknights/torappu/loadingillusts/default.png", {
+						finishedloading = function()
+							if(!IsValid(Arknights.GameFrame) || !IsValid(Arknights.GameFrame.MainMenu)) then return end
+							Arknights.GameFrame.MainMenu:Remove()
+							Arknights.StartupSequence({}, true, true)
+							Arknights.IdealMusic = "title02"
+						end
+					})
+				end
+				ui:Remove()
+			end
+		end
+		draw.RoundedBox(0, 0, AKScrH() - tall, AKScrW(), tall, Color(0, 0, 0, 150))
+		alphamul = math.Clamp(tall / target_tall, 0, 1)
+		surface.SetMaterial(flashmat)
+		surface.SetDrawColor(255, 255, 255, 255 * alphamul)
+		surface.DrawTexturedRect(static_X, static_Y, static_flash_size, static_flash_size)
+		if(flash_next_t < Arknights.CurTimeUnScaled) then
+			flash_size = static_flash_size
+			flash_alpha = 255
+			flash_next_t = Arknights.CurTimeUnScaled + flash_interval
+		else
+			flash_size =	math.Clamp(flash_size + Arknights.GetFixedValue((flash_target_s - flash_size) * 0.085), static_flash_size, flash_target_s)
+			flash_alpha = math.Clamp((0.9 - math.Clamp((flash_size / flash_target_s), 0, 1)) * 255, 0, 255)
+		end
+		surface.SetDrawColor(255, 255, 255, flash_alpha * alphamul)
+		surface.DrawTexturedRect((AKScrW() * 0.5) - (flash_size * 0.5), (AKScrH() - target_tall * 0.5) - flash_size * 0.5, flash_size, flash_size)
+		draw.DrawText("Submitting feedback to neural network...", "Arknights_Common_Small_3x", static_X + flash_target_s * 0.65, AKScrH() - ((target_tall * 0.5) + AKScreenScaleH(5)), Color(255, 255, 255, 255 * alphamul), TEXT_ALIGN_LEFT)
+	end
+	ui.Respond = function()
+		responded = true
+	end
+
+	Arknights.FetchingPanel = ui
 end
