@@ -24,8 +24,12 @@ if(SERVER) then
 	end
 end
 
-if(CLIENT) then -- This is a full clientsided game, don't need to create dirctories on server
+if(CLIENT) then -- This is a fully clientsided game, don't need to create dirctories on server
 	file.CreateDir("arknights")
-	file.CreateDir("arknights/levels")
+	file.CreateDir("arknights/locallevels")
+	file.CreateDir("arknights/levelthumbnails/")
+	file.CreateDir("arknights/user")
+	file.CreateDir("arknights/cache")
+	file.CreateDir("arknights/multiplayer")
 	file.CreateDir("arknights/avatars")
 end

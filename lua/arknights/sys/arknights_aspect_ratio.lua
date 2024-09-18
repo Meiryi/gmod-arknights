@@ -1,6 +1,7 @@
 AKSW = ScrW()
 AKSH = ScrH()
 AKHOFFS = 0
+
 function AKScrW()
 	return AKSW
 end

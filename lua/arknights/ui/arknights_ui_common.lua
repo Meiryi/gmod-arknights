@@ -12,13 +12,13 @@ function Arknights.FadeTransition(func)
 	local alpha = 0
 	ui.Paint = function()
 	if(!switch) then
-		alpha = math.Clamp(alpha + Arknights.GetFixedValue(12), 0, 255)
+		alpha = math.Clamp(alpha + Arknights.GetFixedValue(14), 0, 255)
 		if(alpha >= 255) then
 			func()
 			switch = true
 		end
 	else
-		alpha = math.Clamp(alpha - Arknights.GetFixedValue(12), 0, 255)
+		alpha = math.Clamp(alpha - Arknights.GetFixedValue(14), 0, 255)
 		if(alpha <= 0) then
 			ui:Remove()
 		end
@@ -424,7 +424,7 @@ function Arknights.HomePage()
 	if(!ui.Active || Arknights.IsWaitingRespond()) then return end
 		ui.Active = false
 		Arknights.ModeSelectionMenu(ui)
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end))
 	local w = AKScrW() * 0.1775
 	local h = w * 0.435
@@ -435,7 +435,7 @@ function Arknights.HomePage()
 		y2 = AKScrH() * 0.5825,
 	}, function()
 		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end))
 	table.insert(buttons, Arknights.CreateMatButton3D2D(ui, AKScrW() * 0.145, AKScrH() * 0.455, w, h, Arknights.GetCachedMaterial("arknights/torappu/homepage/[uc]tm_rhodes_day/btn_squad.png"), {
 		x1 = AKScrW() * 0.575,
@@ -444,7 +444,7 @@ function Arknights.HomePage()
 		y2 = AKScrH() * 0.5825,
 	}, function()
 		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end))
 	local w = AKScrW() * 0.1065
 	local h = w * 0.725
@@ -455,7 +455,7 @@ function Arknights.HomePage()
 		y2 = AKScrH() * 0.7225,
 	}, function()
 		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end))
 	table.insert(buttons, Arknights.CreateMatButton3D2D(ui, AKScrW() * 0.425 - (w - AKScreenScaleH(1)), AKScrH() * 0.595, w, h, Arknights.GetCachedMaterial("arknights/torappu/homepage/[uc]tm_rhodes_day/btn_recruit_normal.png"), {
 		x1 = AKScrW() * 0.86,
@@ -464,7 +464,7 @@ function Arknights.HomePage()
 		y2 = AKScrH() * 0.735,
 	}, function()
 		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end))
 	local ow = w
 	local w = AKScrW() * 0.1355
@@ -476,7 +476,7 @@ function Arknights.HomePage()
 		y2 = AKScrH() * 0.715,
 	}, function()
 		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end))
 	local w = AKScrW() * 0.2015
 	local h = w * 0.132
@@ -496,7 +496,7 @@ function Arknights.HomePage()
 	Arknights.CreateMat3D2D(ui, AKScrW() * 0.075, AKScrH() * 0.035, w, h, Arknights.GetCachedMaterial("arknights/torappu/homepage/common/img_shadow.png"))
 	Arknights.CreateMatButton(ui, AKScrW() * 0.075, AKScrH() * 0.035, w, h, Arknights.GetCachedMaterial("arknights/torappu/homepage/common/batch.png"), function()
 		if(!ui.Active) then return end
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 	end)
 
 	local sx = AKScreenScaleH(64)
@@ -589,16 +589,16 @@ function Arknights.ModeSelectionMenu(attachUI)
 	local x = AKScrW() * 0.25
 	local y = AKScrH() * 0.45
 	local customLevel = Arknights.CreateMatButton(ui, x - w * 0.5, y - h * 0.5, w, h, Arknights.GetCachedMaterial("arknights/meiryi/arts/ui/modeselect/customlevels.png"), function()
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 		Arknights.FadeTransition(function()
-
+			Arknights.CustomLevelUI()
 		end)
 	end)
 	x = AKScrW() * 0.75
 	local levelMaker = Arknights.CreateMatButton(ui, x - w * 0.5, y - h * 0.5, w, h, Arknights.GetCachedMaterial("arknights/meiryi/arts/ui/modeselect/levelmaker.png"), function()
-		Arknights.ButtonClickSound("confirm")
+		Arknights.ButtonClickSound("select")
 		Arknights.FadeTransition(function()
-
+			Arknights.LevelMakerUI()
 		end)
 	end)
 
@@ -609,6 +609,52 @@ function Arknights.ModeSelectionMenu(attachUI)
 end
 
 Arknights.FetchingPanel = Arknights.FetchingPanel || nil
+function Arknights.PopupTextEntryMenu(data)
+	local ui = Arknights.CreateFrame(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+		ui.BlurPasses = 0
+		ui.Alpha = 0
+		ui.Exiting = false
+		ui:SetAlpha(0)
+		ui:MakePopup() -- So DTextEntry can receive inputs
+		ui.Paint = function()
+			ui.BlurPasses = math.Clamp(ui.BlurPasses + Arknights.GetFixedValue(1), 0, 6)
+			Arknights.DrawBlur(ui, ui.BlurPasse, ui.BlurPasses * 1.5)
+			if(ui.Exiting) then
+				ui.Alpha = math.Clamp(ui.Alpha - Arknights.GetFixedValue(15), 0, 255)
+				if(ui.Alpha <= 0) then
+					ui:Remove()
+				end
+			else
+				ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue(15), 0, 255)
+			end
+			ui:SetAlpha(ui.Alpha)
+		end
+		local iconoffs = AKScreenScaleH(2)
+		local vertical_margin = AKScrH() * 0.4
+		local horizontal_margin = AKScrW() * 0.2
+		local inner = Arknights.CreatePanelMat(ui, horizontal_margin, vertical_margin, AKScrW() - (horizontal_margin * 2), AKScrH() - (vertical_margin * 2), Arknights.GetCachedMaterial("arknights/torappu/bg/bg9.png"),Color(50, 50, 50, 255))
+		local text_margin = AKScreenScaleH(8)
+		local text1 = Arknights.CreateLabelBG(inner, text_margin, text_margin, data.t1, "Arknights_Popup_1x", data.tcolor, data.t1color, nil)
+		Arknights.CreateLabelBG(inner, Arknights.GetGUINextPos(text1).x, text_margin, data.t2, "Arknights_Popup_1x", data.tcolor, data.t2color, Arknights.GetCachedMaterial("arknights/torappu/common_icon/icon_input.png"))
+		local textentry_margin = AKScreenScaleH(32)
+		local textentry_wide, textentry_tall = inner:GetWide() - (textentry_margin * 2), AKScreenScaleH(18)
+		local text_entry = Arknights.CreateTextEntry(inner, textentry_margin, inner:GetTall() * 0.5 - textentry_tall * 0.5, textentry_wide, textentry_tall, data.ptext, "Arknights_TextEntry_PlaceHolder_1x", Color(255, 255, 255, 255), Color(120, 120, 120, 255), Color(80, 80, 80, 255))
+
+		local buttonWidth, buttonHeight = inner:GetWide() * 0.5, AKScreenScaleH(28)
+		local cancel_button = Arknights.CreateMatButtonTextIcon(ui, inner:GetX(), inner:GetY() + inner:GetTall(), buttonWidth, buttonHeight, Arknights.GetCachedMaterial("arknights/torappu/button/btn_cancel_bkg.png"), "Cancel", "Arknights_Popup_1x", Color(255, 255, 255, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/btn_icon_cancel.png"), {x = 0, y = -iconoffs}, function()
+			if(ui.Exiting) then return end
+
+			Arknights.ButtonClickSound("select")
+			ui.Exiting = true
+		end)
+		local confirmbutton = Arknights.CreateMatButtonTextIcon(ui, inner:GetX() + inner:GetWide() * 0.5, inner:GetY() + inner:GetTall(), buttonWidth, buttonHeight, Arknights.GetCachedMaterial("arknights/torappu/button/btn_confirm_blue_bkg.png"), "Confirm", "Arknights_Popup_1x", Color(255, 255, 255, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/btn_icon_confirm.png"), {x = 0, y = -iconoffs}, function()
+			if(ui.Exiting) then return end
+
+			Arknights.ButtonClickSound("select")
+			ui.Exiting = true
+		end)
+		ui.InnerPanel = inner
+end
 
 function Arknights.RespondWaiting()
 	if(!IsValid(Arknights.FetchingPanel)) then return end

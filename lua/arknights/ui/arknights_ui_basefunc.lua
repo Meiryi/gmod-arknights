@@ -8,7 +8,7 @@ function Arknights.GetTextSize(font, text)
     return surface.GetTextSize(text)
 end
 
-function Arknights.CreateImage(parent, x, y, w, h, image, color)
+function Arknights.CreateImage(parent, x, y, w, h, image, color) -- Don't use this, use CreatePanelMat instead, it will create a Material everytime
     if(!color) then color = color_white end
     local img = vgui.Create("DImage", parent)
         img:SetPos(x, y)
@@ -34,6 +34,7 @@ function Arknights.CreateFrame(parent, x, y, w, h, color)
     return panel
 end
 
+local bordershadow = Material("")
 function Arknights.CreatePanelMat(parent, x, y, w, h, mat, color)
     local panel = vgui.Create("DPanel", parent)
         panel:SetPos(x, y)
@@ -48,16 +49,73 @@ function Arknights.CreatePanelMat(parent, x, y, w, h, mat, color)
     return panel
 end
 
+function Arknights.GetGUINextPos(panel)
+    return Vector(panel:GetX() + panel:GetWide(), panel:GetY() + panel:GetTall(), 0)
+end
+
+function Arknights.CreateTextEntry(parent, x, y, w, h, placeholder, font, color, pcolor, bgcolor)
+    local panel = Arknights.CreatePanel(parent, x, y, w, h, bgcolor)
+    local text = vgui.Create("DTextEntry", panel)
+        text:SetPos(0, 0)
+        text:SetSize(w, h)
+        text:SetPlaceholderText(placeholder)
+        text:SetPlaceholderColor(pcolor)
+        text:SetPaintBackground(false)
+        text:SetTextColor(color)
+        text:SetFont(font)
+    return text
+end
+
 function Arknights.CreatePanel(parent, x, y, w, h, color, r)
     r = r || 0
     local panel = vgui.Create("DPanel", parent)
         panel:SetPos(x, y)
         panel:SetSize(w, h)
+        panel.Paint2x = function() end
         panel.Paint = function()
             draw.RoundedBox(r, 0, 0, w, h, color)
+            panel.Paint2x()
         end
         panel:SetZPos(0)
     return panel
+end
+
+function Arknights.CreateLabelBG(parent, x, y, text, font, color, bgcolor, mat)
+    local edge_extend = AKScreenScaleH(1)
+    local side_margin = AKScreenScaleH(2)
+    local text_wide, text_tall = Arknights.GetTextSize(font, text)
+    local hasmaterial = mat != nil
+    local base = vgui.Create("DPanel", parent)
+        base.oPos = Vector(x, y)
+        base:SetPos(x, y)
+        local extend_wide = side_margin * 2
+        if(hasmaterial) then
+            extend_wide = (side_margin * 3) + text_tall
+        end
+        base:SetSize(text_wide + extend_wide + (edge_extend * 2), text_tall + (edge_extend * 2))
+        local round = base:GetTall() * 0.2
+        base.Paint = function()
+            draw.RoundedBox(round, 0, 0, base:GetWide(), base:GetTall(), bgcolor)
+        end
+        local _, _, text = Arknights.CreateLabel(base, side_margin + edge_extend, edge_extend, text, font, color)
+        if(hasmaterial) then
+            Arknights.CreatePanelMat(base, side_margin + edge_extend, edge_extend, text_tall, text_tall, mat, color)
+            text:SetX(side_margin * 2 + text_tall)
+        end
+
+        base.CentHor = function()
+            base:SetX(base.oPos.x - base:GetWide() * 0.5)
+        end
+
+        base.CentVer = function()
+            base:SetY(base.oPos.y - base:GetTall() * 0.5)
+        end
+
+        base.CentPos = function()
+            base:SetPos(base.oPos.x - base:GetWide() * 0.5, base.oPos.y - base:GetTall() * 0.5)
+        end
+
+    return base
 end
 
 function Arknights.CreateLabel(parent, x, y, text, font, color, bg, bgcolor)
@@ -245,6 +303,56 @@ function Arknights.CreateMatButton(parent, x, y, w, h, mat, func)
     return bg
 end
 
+function Arknights.CreateMatButtonTextIcon(parent, x, y, w, h, mat1, text, font, color, mat2, offs, func)
+    local bg = Arknights.CreateFrame(parent, x, y, w, h, Color(0, 0, 0, 0))
+    local clr = 255
+    local keydown = false
+    local hovered = false
+    bg:NoClipping(false)
+    bg.Paint2x = function() end
+    bg.Paint = function()
+        surface.SetDrawColor(clr, clr, clr, 255)
+        surface.SetMaterial(mat1)
+        surface.DrawTexturedRect(0, 0, w, h)
+        bg.Paint2x()
+    end
+    local size = h * 0.5
+    local icon = Arknights.CreatePanelMat(bg, 0, 0, size, size, mat2, Color(255, 255, 255, 255))
+    icon:SetY((bg:GetTall() * 0.5 - size * 0.5) + offs.y)
+    local textwide, texttall, text = Arknights.CreateLabel(bg, offs.x, (bg:GetTall() * 0.5) + offs.y, text, font, color)
+    text.CentVer()
+    local margin = AKScreenScaleH(2)
+    local offset = textwide + margin
+    icon:SetX((bg:GetWide() * 0.5 - offset * 0.5) + offs.x)
+    text:SetX(bg:GetWide() * 0.5 - ((offset * 0.5) - (icon:GetWide() + margin)))
+    local btn = Arknights.InvisButton(bg, 0, 0, w, h, func)
+    btn.DoClick = func
+end
+
+function Arknights.CreateMatButtonText(parent, x, y, w, h, mat, text, font, color, func, bw, bh)
+    local bg = Arknights.CreateFrame(parent, x, y, w, h, Color(0, 0, 0, 0))
+    local clr = 255
+    local keydown = false
+    local hovered = false
+    bg:NoClipping(false)
+    bg.Paint2x = function() end
+    bg.Paint = function()
+        surface.SetDrawColor(clr, clr, clr, 255)
+        surface.SetMaterial(mat)
+        surface.DrawTexturedRect(0, 0, w, h)
+        bg.Paint2x()
+    end
+    local btn = vgui.Create("DButton", bg)
+        btn:SetSize(bw || bg:GetWide(), bh || bg:GetTall())
+        btn:SetText(text)
+        btn:SetFont(font)
+        btn:SetTextColor(color)
+        btn.Paint = function()
+            return
+        end
+        btn.DoClick = func
+end
+
 function Arknights.CreateMatButton3D2D(parent, x, y, w, h, mat, buttonpts, func)
     local bg = Arknights.CreateFrame(parent, x, y, w, h, Color(0, 0, 0, 0))
     local clr = 255
@@ -339,16 +447,16 @@ function Arknights.BuildCircle(x, y, radius)
 end
 
 local blur = Material("pp/blurscreen")
-function Arknights.DrawBlur(panel, amount)
+function Arknights.DrawBlur(panel, passes, amount)
     local x, y = panel:LocalToScreen(0, 0)
     surface.SetDrawColor(255, 255, 255)
     surface.SetMaterial(blur)
-    for i = 1, 6 do
+    for i = 1, 2 do
         blur:SetFloat("$blur", (i / 6) * amount)
         blur:Recompute()
         render.UpdateScreenEffectTexture()
 
-        surface.DrawTexturedRect(x * -1, y * -1, AKScrW(), AKScrH())
+        surface.DrawTexturedRect(x * -1, y * -1, ScrW(), ScrH())
     end
 end
 
