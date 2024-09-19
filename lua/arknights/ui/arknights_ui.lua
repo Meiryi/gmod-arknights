@@ -18,6 +18,7 @@ function Arknights.Launch()
 	local basepanel = Arknights.CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0))
 	basepanel:MakePopup()
 	local ui = Arknights.CreateFrame(basepanel, 0, math.max(0, (ScrH() - AKScrH()) * 0.5), AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	ui.BasePanel = basepanel
 	basepanel.Think = function()
 		basepanel.Alpha = math.Clamp(basepanel.Alpha + Arknights.GetFixedValue(10), 0, 255)
 		if(!IsValid(ui)) then
@@ -50,10 +51,15 @@ function Arknights.Launch()
 	end
 end
 
+function Arknights.IsGameActive()
+	return IsValid(Arknights.GameFrame)
+end
+
 function Arknights.DirectToHome()
 	local basepanel = Arknights.CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0))
 	basepanel:MakePopup()
 	local ui = Arknights.CreateFrame(basepanel, 0, math.max(0, (ScrH() - AKScrH()) * 0.5), AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	ui.BasePanel = basepanel
 	basepanel.Think = function()
 		basepanel.Alpha = math.Clamp(basepanel.Alpha + Arknights.GetFixedValue(10), 0, 255)
 		if(!IsValid(ui)) then
@@ -79,3 +85,9 @@ function Arknights.DirectToHome()
 	Arknights.StartMusic("void")
 	Arknights.HomePage()
 end
+
+hook.Add("PreDrawViewModel", "Arknights_HideVM", function()
+	local hide = Arknights.IsGameActive()
+	LocalPlayer():DrawViewModel(!hide)
+	return hide
+end)

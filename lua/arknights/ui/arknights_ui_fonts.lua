@@ -98,6 +98,16 @@ surface.CreateFont("Arknights_Popup_1x", {
 	antialias = true,
 })
 
+surface.CreateFont("Arknights_Popup_2x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(18),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
 surface.CreateFont("Arknights_TextEntry_PlaceHolder_1x", {
 	font = "Bender",
 	extended = false,

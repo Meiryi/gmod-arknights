@@ -608,7 +608,50 @@ function Arknights.ModeSelectionMenu(attachUI)
 	end)
 end
 
-Arknights.FetchingPanel = Arknights.FetchingPanel || nil
+local okmaterial = Arknights.GetCachedMaterial("arknights/torappu/common_icon/btn_icon_confirm.png")
+function Arknights.PopupNotify(text, clickfunc)
+	local ui = Arknights.CreateFrame(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+		ui.BlurPasses = 0
+		ui.Alpha = 0
+		ui.Exiting = false
+		ui:SetAlpha(0)
+		ui:MakePopup() -- So DTextEntry can receive inputs
+		ui.Paint = function()
+			ui.BlurPasses = math.Clamp(ui.BlurPasses + Arknights.GetFixedValue(1), 0, 6)
+			Arknights.DrawBlur(ui, ui.BlurPasse, ui.BlurPasses * 1.5)
+			if(ui.Exiting) then
+				ui.Alpha = math.Clamp(ui.Alpha - Arknights.GetFixedValue(15), 0, 255)
+				if(ui.Alpha <= 0) then
+					ui:Remove()
+				end
+			else
+				ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue(15), 0, 255)
+			end
+			ui:SetAlpha(ui.Alpha)
+		end
+		local vertical_margin = AKScrH() * 0.35
+		local inner = Arknights.CreatePanelMat(ui, 0, vertical_margin, AKScrW(), AKScrH() - (vertical_margin * 2), Arknights.GetCachedMaterial("arknights/torappu/bg/bg9.png"),Color(50, 50, 50, 255))
+		local _, _, t = Arknights.CreateLabel(inner, inner:GetWide() * 0.5, inner:GetTall() * 0.5, text, "Arknights_Popup_2x", Color(220, 220, 220, 255))
+		t.CentPos()
+		local buttonTall = AKScreenScaleH(24)
+		local okbutton = Arknights.InvisButton(inner, 0, inner:GetTall() - buttonTall, AKScrW(), buttonTall, function()
+			if(ui.Exiting) then return end
+			if(clickfunc) then
+				clickfunc()
+			end
+			ui.Exiting = true
+			Arknights.ButtonClickSound("select")
+		end)
+		local materialsize = okbutton:GetTall() * 0.65
+		local offset = (okbutton:GetTall() - materialsize)
+		okbutton.Paint = function()
+			draw.RoundedBox(0, 0, 0, okbutton:GetWide(), okbutton:GetTall(), Color(0, 0, 0, 200))
+			surface.SetDrawColor(255, 255, 255, 255)
+			surface.SetMaterial(okmaterial)
+			surface.DrawTexturedRect(okbutton:GetWide() * 0.5 - materialsize * 0.5, offset * 0.5, materialsize, materialsize)
+		end
+end
+
 function Arknights.PopupTextEntryMenu(data)
 	local ui = Arknights.CreateFrame(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 		ui.BlurPasses = 0
@@ -649,8 +692,16 @@ function Arknights.PopupTextEntryMenu(data)
 		end)
 		local confirmbutton = Arknights.CreateMatButtonTextIcon(ui, inner:GetX() + inner:GetWide() * 0.5, inner:GetY() + inner:GetTall(), buttonWidth, buttonHeight, Arknights.GetCachedMaterial("arknights/torappu/button/btn_confirm_blue_bkg.png"), "Confirm", "Arknights_Popup_1x", Color(255, 255, 255, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/btn_icon_confirm.png"), {x = 0, y = -iconoffs}, function()
 			if(ui.Exiting) then return end
-
 			Arknights.ButtonClickSound("select")
+			if(data.condfunc) then
+				if(!data.condfunc(text_entry:GetValue())) then
+					return
+				else
+					if(data.passfunc) then
+						data.passfunc(text_entry:GetValue())
+					end
+				end
+			end
 			ui.Exiting = true
 		end)
 		ui.InnerPanel = inner
@@ -661,6 +712,7 @@ function Arknights.RespondWaiting()
 	Arknights.FetchingPanel.Respond()
 end
 
+Arknights.FetchingPanel = Arknights.FetchingPanel || nil
 function Arknights.WaitingIndicator(supppressFallback)
 	local ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 	local tall = 0

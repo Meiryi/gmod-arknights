@@ -54,7 +54,32 @@ function Arknights.LevelMakerUI()
 			ptext = "Name for the level",
 			t1color = Color(130, 130, 130, 255),
 			t2color = Color(255, 220, 0, 255),
-			tcolor = Color(0, 0, 0, 255)
+			tcolor = Color(0, 0, 0, 255),
+			condfunc = function(text)
+				if(#text <= 2) then
+					Arknights.PopupNotify("You need to enter atleast 3 characters!")
+					return
+				end
+				return true
+			end,
+			passfunc = function(text)
+				local mapID = bit.tohex(math.random(1048576, 16777215), 6)
+				local mapData = {
+					id = mapID,
+					name = text,
+					author = LocalPlayer():SteamID64(),
+					enemies = {},
+					paths = {},
+					structures = {},
+					musicid = "qiecheng",
+					levelsize = {
+						w = 16,
+						h = 16,
+					},
+				}
+				local ctx = util.Compress(util.TableToJSON(mapData))
+				file.Write("arknights/locallevels/"..mapID..".dat", ctx)
+			end,
 		})
 		Arknights.ButtonClickSound("select")
 	end, nil, innerButtonTall)
