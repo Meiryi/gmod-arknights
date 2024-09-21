@@ -303,6 +303,32 @@ function Arknights.CreateMatButton(parent, x, y, w, h, mat, func)
     return bg
 end
 
+function Arknights.CreateMatButtonScale(parent, x, y, w, h, mat, scale, bgColor, func)
+    local bg = Arknights.CreateFrame(parent, x, y, w, h, Color(0, 0, 0, 0))
+    local clr = 255
+    local keydown = false
+    local hovered = false
+    local offsetW = (w - (w * scale)) * 0.5
+    local offsetH = (h - (h * scale)) * 0.5
+    local sizeW = w * scale
+    local sizeH = h * scale
+    bg.mat = mat
+    bg:NoClipping(false)
+    bg.Paint2x = function() end
+    bg.Paint = function()
+        draw.RoundedBox(0, 0, 0, w, h, bgColor)
+        surface.SetDrawColor(clr, clr, clr, 255)
+        surface.SetMaterial(bg.mat)
+        surface.DrawTexturedRect(offsetW, offsetH, sizeW, sizeH)
+        
+        bg.Paint2x()
+    end
+    function bg:OnMousePressed()
+        func()
+    end
+    return bg
+end
+
 function Arknights.CreateMatButtonTextIcon(parent, x, y, w, h, mat1, text, font, color, mat2, offs, func)
     local bg = Arknights.CreateFrame(parent, x, y, w, h, Color(0, 0, 0, 0))
     local clr = 255

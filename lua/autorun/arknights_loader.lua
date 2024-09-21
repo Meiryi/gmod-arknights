@@ -2,7 +2,7 @@ Arknights = Arknights || {}
 Arknights.CurTime = SysTime()
 Arknights.CurTimeUnScaled = SysTime()
 Arknights.TimeScale = 1
-Arknights.Version = "1.0.0"
+Arknights.Version = "dev"
 
 local f, d = file.Find("lua/arknights/*", "GAME")
 

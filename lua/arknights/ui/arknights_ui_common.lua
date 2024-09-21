@@ -6,7 +6,8 @@ function Arknights.GetScreenTexture()
 end
 
 function Arknights.FadeTransition(func)
-	local ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local ui = Arknights.CreatePanel(nil, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	ui:MakePopup()
 	ui:SetZPos(32767)
 	local switch = false
 	local alpha = 0
@@ -37,7 +38,8 @@ end
 	finishedloading
 ]]
 function Arknights.LoadingScreen(loadingbg, funcs)
-	local ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local ui = Arknights.CreatePanel(nil, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	ui:MakePopup()
 	local mat = Arknights.GetCachedMaterial(loadingbg)
 	local alpha = 0
 	local staytime = 0
@@ -213,7 +215,7 @@ function Arknights.StartupSequence(data, skip, suppressMusic)
 		surface.DrawTexturedRect(AKScrW() * 0.5 - dimsize * 0.5, -dimsize * 0.5, dimsize, dimsize)
 		surface.SetDrawColor(255, 255, 255, 255)
 		for k,v in pairs(particles) do
-			if(v.currentpos.y <= v.targetpos.y) then
+			if(v.currentpos.y <= -64) then
 				table.remove(particles, k)
 				continue
 			end
@@ -279,6 +281,7 @@ function Arknights.StartupSequence(data, skip, suppressMusic)
 		draw.DrawText("#1", "Arknights_Common_Big_Arial", AKScrW() * 0.5, AKScrH() * 0.5 - _h * 0.1, Color(255, 255, 255, alp), TEXT_ALIGN_CENTER)
 		if(startconnecting) then
 			if(!fetching && nextfetch < Arknights.CurTimeUnScaled) then
+				--[[
 					http.Fetch("https://meiryiservice.xyz/arknights/status/fetch.txt",
 						function(body, length, headers, code)
 							if(body == "STATUS_OK") then
@@ -293,6 +296,24 @@ function Arknights.StartupSequence(data, skip, suppressMusic)
 							failedcount = failedcount + 1
 						end
 					)
+				]]
+				HTTP({
+					failed = function(reason)
+						fetching = false
+						failedcount = failedcount + 1
+					end,
+					success = function(code, body, headers)
+						if(body == "STATUS_OK") then
+							__ok = true
+						else
+							fetching = false
+							failedcount = failedcount + 1
+						end
+					end,
+					timeout = 10,
+					method = "GET",
+					url = "https://meiryiservice.xyz/arknights/status/status.txt"
+				})
 				nextfetch = Arknights.CurTimeUnScaled + 3
 				fetching = true
 			end

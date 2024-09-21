@@ -65,25 +65,30 @@ function Arknights.LevelMakerUI()
 			passfunc = function(text)
 				local mapID = bit.tohex(math.random(1048576, 16777215), 6)
 				local mapData = {
-					id = mapID,
-					name = text,
-					author = LocalPlayer():SteamID64(),
-					enemies = {},
-					paths = {},
-					structures = {},
-					musicid = "qiecheng",
-					levelsize = {
-						w = 16,
+					MapID = mapID,
+					MapName = text,
+					Author = LocalPlayer():SteamID64(),
+					Enemies = {},
+					Paths = {},
+					Structures = {},
+					Structures_Details = {},
+					Music = "indust",
+					Size = {
+						w = 8,
 						h = 16,
 					},
 				}
 				local ctx = util.Compress(util.TableToJSON(mapData))
+				Arknights.FadeTransition(function()
+					Arknights.StartStage(mapData, true)
+				end)
 				file.Write("arknights/locallevels/"..mapID..".dat", ctx)
 			end,
 		})
 		Arknights.ButtonClickSound("select")
 	end, nil, innerButtonTall)
-	local deleteLevel = Arknights.CreateMatButtonText(bottomPanel, AKScrW() - ((buttonWide * 2) + horizontal_margin), bottomMargin, buttonWide, buttonHeight, Arknights.GetCachedMaterial("arknights/torappu/button/image_btn_bkg_red.png"), "Delete Level", "Arknights_Button_1x", Color(255, 255, 255, 255), function()
+	local side_margin = AKScreenScaleH(8)
+	local deleteLevel = Arknights.CreateMatButtonText(bottomPanel, AKScrW() - ((buttonWide * 2 + side_margin) + horizontal_margin), bottomMargin, buttonWide, buttonHeight, Arknights.GetCachedMaterial("arknights/torappu/button/image_btn_bkg_red.png"), "Delete Level", "Arknights_Button_1x", Color(255, 255, 255, 255), function()
 		Arknights.ButtonClickSound("select")
 	end, nil, innerButtonTall)
 
