@@ -72,6 +72,8 @@ function Arknights.LevelMakerUI()
 					Paths = {},
 					Structures = {},
 					Structures_Details = {},
+					Background = "arknights/torappu/map/TX_LMC_BG.png",
+					CreationDate = os.time(),
 					Music = "indust",
 					Size = {
 						w = 8,

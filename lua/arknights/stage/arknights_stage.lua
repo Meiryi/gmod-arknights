@@ -13,6 +13,7 @@ Arknights.Stage.MapID = Arknights.Stage.MapID || "NULL"
 Arknights.Stage.MapName = Arknights.Stage.MapName || "NULL"
 Arknights.Stage.Author = Arknights.Stage.Author || "NULL"
 Arknights.Stage.Background = Arknights.Stage.Background || "arknights/torappu/map/TX_LMC_BG.png"
+Arknights.Stage.CreationDate = Arknights.Stage.CreationDate || -1
 
 Arknights.Stage.Data = Arknights.Stage.Data || {}
 Arknights.Stage.Size = Arknights.Stage.Size || {w = 16, h = 16}

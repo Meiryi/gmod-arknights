@@ -118,10 +118,30 @@ surface.CreateFont("Arknights_TextEntry_PlaceHolder_1x", {
 	antialias = true,
 })
 
+surface.CreateFont("Arknights_StageMaker_0.5x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(10),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
 surface.CreateFont("Arknights_StageMaker_1x", {
 	font = "Bender",
 	extended = false,
 	size = AKScreenScaleH(12),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_StageMaker_2x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(18),
 	weight = 1000,
 	blursize = 0,
 	scanlines = 0,
