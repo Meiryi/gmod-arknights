@@ -1,4 +1,4 @@
-Arknights.StageMaker = {}
+Arknights.StageMaker = Arknights.StageMaker || {}
 Arknights.StageMaker.MusicID = {
 	lungmenbat = "lungmenbat",
 	lungmenbatimp = "lungmenbatimp",
@@ -14,7 +14,19 @@ Arknights.StageMaker.MusicID = {
 	qiecheng = "qiecheng",
 	qiechengimp = "qiechengimp",
 }
-
+Arknights.StageMaker.BackgroundID = {
+	background1 = "arknights/torappu/map/TX_BG_LM_roof_D.png",
+	background2 = "arknights/torappu/map/TX_BG_LM_roof_N.png",
+	background3 = "arknights/torappu/map/TX_Bridge_BG.png",
+	background4 = "arknights/torappu/map/TX_Bridge_BG_fire.png",
+	background5 = "arknights/torappu/map/TX_Dosscity_BG.png",
+	background6 = "arknights/torappu/map/TX_GLBY_BG.png",
+	background7 = "arknights/torappu/map/TX_LMC_BG.png",
+	background8 = "arknights/torappu/map/TX_Qcity_core_BG.png",
+	background9 = "arknights/torappu/map/TX_Qcity_ice_BG.png",
+	background10 = "arknights/torappu/map/TX_Qcity_ice_BG01.png",
+	background11 = "arknights/torappu/map/TX_SalViento_BG.png",
+}
 
 local spacing = ScreenScaleH(4)
 function Arknights.AutoResizePanel(ui, pnl, space)
@@ -121,6 +133,70 @@ function Arknights.StageMaker.DropdownMenu(ui, settings, values, func)
 	Arknights.AutoResizePanel(ui, basepnl)
 end
 
+function Arknights.StageMaker.CreatePopupButton(ui, settings, funcs)
+	local wide = ui:GetWide() - (spacing * 2)
+	local val = Arknights.Stage[settings]
+	if(val == nil) then return end
+	local basepnl = Arknights.CreatePanel(ui, spacing, 0, wide, ScreenScaleH(14), Color(30, 30, 30, 255))
+		basepnl:Dock(TOP)
+		basepnl:DockMargin(spacing, 0, 0, spacing)
+		local _, _, label = Arknights.CreateLabel(basepnl, spacing, basepnl:GetTall() * 0.5, val, "Arknights_StageMaker_0.5x", Color(255, 255, 255, 255))
+		label.CentVer()
+		local btn = Arknights.InvisButton(basepnl, 0, 0, basepnl:GetWide(), basepnl:GetTall(), function()
+			Arknights.PopupTextEntryMenu({
+				t1 = "Level Size",
+				t2 = "Size for the level (Numbers only)",
+				ptext = "Size for the level",
+				t1color = Color(130, 130, 130, 255),
+				t2color = Color(255, 220, 0, 255),
+				tcolor = Color(0, 0, 0, 255),
+				condfunc = funcs.condfunc,
+				passfunc = funcs.passfunc,
+			})
+			Arknights.ButtonClickSound("select")
+		end)
+		basepnl.Think = function()
+			label.UpdateText(Arknights.Stage.Size[settings])
+		end
+	Arknights.AutoResizePanel(ui, basepnl)
+end
+
+function Arknights.StageMaker.CreatePopupButtonStageSize(ui, settings, funcs)
+	local wide = ui:GetWide() - (spacing * 2)
+	local val = Arknights.Stage.Size[settings]
+	if(val == nil) then return end
+	local basepnl = Arknights.CreatePanel(ui, spacing, 0, wide, ScreenScaleH(14), Color(30, 30, 30, 255))
+		basepnl:Dock(TOP)
+		basepnl:DockMargin(spacing, 0, 0, spacing)
+		local _, _, label = Arknights.CreateLabel(basepnl, spacing, basepnl:GetTall() * 0.5, val, "Arknights_StageMaker_0.5x", Color(255, 255, 255, 255))
+		label.CentVer()
+		local btn = Arknights.InvisButton(basepnl, 0, 0, basepnl:GetWide(), basepnl:GetTall(), function()
+			Arknights.PopupTextEntryMenu({
+				t1 = "Level Size",
+				t2 = "Size for the level (Numbers only)",
+				ptext = "Size for the level",
+				t1color = Color(130, 130, 130, 255),
+				t2color = Color(255, 220, 0, 255),
+				tcolor = Color(0, 0, 0, 255),
+				condfunc = funcs.condfunc,
+				passfunc = funcs.passfunc,
+			})
+			Arknights.ButtonClickSound("select")
+		end)
+		basepnl.Think = function()
+			label.UpdateText(Arknights.Stage.Size[settings])
+		end
+	Arknights.AutoResizePanel(ui, basepnl)
+end
+
+function Arknights.StageMaker.CreateVariableSwitch(ui, settings, var)
+	local val = Arknights.StageMaker[settings]
+end
+
+local outofrange = function(val)
+	return (val >= 4 && val <= 24)
+end
+
 Arknights.StageMaker.ToolTabs = {
 	{
 		title = "Level Settings",
@@ -129,16 +205,76 @@ Arknights.StageMaker.ToolTabs = {
 			Arknights.StageMaker.DropdownMenu(ui, "Music", Arknights.StageMaker.MusicID, function(val)
 				Arknights.IdealMusic = val
 			end)
+			Arknights.StageMaker.CreateDesc(ui, "Level Background")
+			Arknights.StageMaker.DropdownMenu(ui, "Background", Arknights.StageMaker.BackgroundID, function(val)
+				Arknights.Stage.Background = val
+			end)
+			Arknights.StageMaker.CreateDesc(ui, "Level Width")
+			Arknights.StageMaker.CreatePopupButtonStageSize(ui, "h", {
+				condfunc = function(text)
+					local value = tonumber(text)
+					if(!value) then
+						Arknights.PopupNotify("You need to enter a number!")
+						return
+					end
+					if(!outofrange(value)) then
+						Arknights.PopupNotify("Value is out of range! (4-24)")
+						return
+					end
+					return true
+				end,
+				passfunc = function(text)
+					local val = tonumber(text)
+					Arknights.Stage.Size.h = val
+					Arknights.NextFrameFunc(Arknights.ReCalculateAllStructurePosition)
+					Arknights.RemoveOutOfBoundsStructure()
+					Arknights.SaveLevelData()
+				end,
+			})
+			Arknights.StageMaker.CreateDesc(ui, "Level Height")
+			Arknights.StageMaker.CreatePopupButtonStageSize(ui, "w", {
+				condfunc = function(text)
+					local value = tonumber(text)
+					if(!value) then
+						Arknights.PopupNotify("You need to enter a number!")
+						return
+					end
+					if(!outofrange(value)) then
+						Arknights.PopupNotify("Value is out of range! (4-24)")
+						return
+					end
+					return true
+				end,
+				passfunc = function(text)
+					local val = tonumber(text)
+					Arknights.Stage.Size.w = val
+					Arknights.NextFrameFunc(Arknights.ReCalculateAllStructurePosition)
+					Arknights.RemoveOutOfBoundsStructure()
+					Arknights.SaveLevelData()
+				end,
+			})
 		end,
 	},
 	{
-		title = "Structures",
+		title = "Mapping",
 		func = function(ui)
-
+			--[[
+					Types of structures:
+						ground = Ground tile
+						ranged = High ground tile
+						wall = Wall tile
+						kill = Kill tile
+			]]
+			Arknights.StageMaker.CreateVariableSwitch(ui, "BlockType", {
+				["Ground Tile"] = "ground",
+				["High Ground Tile"] = "ranged",
+				["High Ground Tile (Undeplayable)"] = "wall",
+				["Kill Tile"] = "kill",
+			})
 		end,
 	},
 	{
-		title = "Structures (Details)",
+		title = "Texturing",
 		func = function(ui)
 
 		end,
@@ -156,7 +292,13 @@ Arknights.StageMaker.ToolTabs = {
 		end,
 	},
 	{
-		title = "Paths",
+		title = "Path Node",
+		func = function(ui)
+
+		end,
+	},
+	{
+		title = "Editor Settings",
 		func = function(ui)
 
 		end,
@@ -176,45 +318,12 @@ function Arknights.CreateStageUI()
 	local ui = Arknights.CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0))
 	ui:MakePopup()
 
+	local out = true
+	local panelHovered = false
 	if(Arknights.Stage.Editmode) then
-		--[[
-		local height = AKScrH() * 0.175
-		local barheight = AKScreenScaleH(24)
-		local nextX = 0
-		local side_margin = AKScreenScaleH(6)
-		local side_margin_2x = side_margin * 2
-		local currentSelected = 0
-		for k,v in ipairs(Arknights.StageMaker.ToolTabs) do
-			local wide = Arknights.GetTextSize("Arknights_StageMaker_1x", v.title)
-			local btn = Arknights.CreateButton(propertiesbar, nextX, 0, wide + side_margin_2x, propertiesbar:GetTall(), v.title, "Arknights_StageMaker_1x", Color(255, 255, 255, 255), Color(40, 40, 40, 255), function(self, fromSystem)
-				if(currentSelected == k) then return end
-				currentSelected = k
-
-				if(fromSystem) then return end
-				Arknights.ButtonClickSound("select")
-			end)
-			local clr = 0
-			btn.Think = function()
-				if(currentSelected == k) then
-					clr = math.Clamp(clr + Arknights.GetFixedValue(5), 0, 40)
-				else
-					clr = math.Clamp(clr - Arknights.GetFixedValue(5), 0, 40)
-				end
-			end
-			btn.Paint = function()
-				draw.RoundedBox(0, 0, 0, btn:GetWide(), btn:GetTall(), Color(clr,  clr, clr, 150))
-			end
-			if(k == 1) then
-				btn.DoClick(btn, true)
-			end
-			nextX = nextX + btn:GetWide()
-		end
-		]]
-
 		local wide = ScrW() * 0.2
 		local origin = ScrW() - wide
 		local currentPos = origin
-		local out = true
 		local properties = Arknights.CreateScroll(ui, origin, 0, wide, ScrH(), Color(40, 40, 40, 200))
 		local buttonSize = AKScreenScaleH(32)
 		properties.HideButton = Arknights.CreateMatButtonScale(ui, properties:GetX() - buttonSize, 0, buttonSize, buttonSize, Arknights.GetCachedMaterial("arknights/meiryi/arts/button/in.png"), 0.5, Color(40, 40, 40, 205), function()
@@ -230,6 +339,8 @@ function Arknights.CreateStageUI()
 			properties.HideButton:SetX(properties:GetX() - buttonSize)
 		end
 		properties.Think = function()
+			local x, y = input.GetCursorPos()
+			panelHovered = x >= properties:GetX()
 			local currentX = properties:GetX()
 			if(out) then
 				currentPos = (math.Clamp(currentPos - Arknights.GetFixedValue((currentPos - origin) * 0.15), origin, ScrW()))
@@ -288,19 +399,32 @@ function Arknights.CreateStageUI()
 			end
 			v.func(panel.SubPanel)
 		end
+		Arknights.StageMaker.EditorFrame = properties
 	end
 
 	ui.Think = function()
 		local x, y = input.GetCursorPos()
+		if(out && panelHovered) then
+			x, y = -1, -1
+		end
 		Arknights.Stage.CursorPos.x = x
 		Arknights.Stage.CursorPos.y = y
 		Arknights.Stage.CursorDir = gui.ScreenToVector(x, y)
+		if(Arknights.TakingScreenshot) then
+			ui:SetAlpha(0)
+		else
+			ui:SetAlpha(255)
+		end
 	end
+
+	local w, h = ScrW() * 0.3, ScrH() * 0.075
+	local toolbar = Arknights.CreatePanel(ui, ScrW() * 0.5 - w * 0.5, 0, w, h, Color(30, 30, 30, 255))
 
 	Arknights.BackButton(ui, function()
 		Arknights.FadeTransition(function()
 			Arknights.ToggleGameFrame(true)
 			Arknights.IdealMusic = "void"
+			Arknights.RemoveAllStageStructureEntities()
 			ui:Remove()
 		end)
 	end)

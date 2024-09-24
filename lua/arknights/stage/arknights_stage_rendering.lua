@@ -1,16 +1,6 @@
 Arknights.Stage.CursorPos = {x = 0, y = 0}
 Arknights.Stage.CursorDir = Vector(0, 0, 0)
 
-function Arknights.StartStage(stageData, editmode)
-	if(!stageData || !istable(stageData)) then return end
-	Arknights.Stage.Editmode = editmode
-	Arknights.ToggleGameFrame(false)
-	for k,v in pairs(stageData) do
-		Arknights.Stage[k] = v
-	end
-	Arknights.CreateStageUI()
-end
-
 hook.Add("CalcView", "Arknights_CalcView", function(ply, pos, angles, fov)
 	if(!Arknights.IsGameActive()) then return end
 	local view = {
@@ -29,7 +19,7 @@ hook.Add( "HUDShouldDraw", "Arknights_DisableHUD", function(name)
 end)
 
 Arknights_DisableHUD = Arknights_DisableHUD || false
-Arknights.Stage.ManualPaintEnities = {}
+Arknights.Stage.ManualPaintEnities = Arknights.Stage.ManualPaintEnities || {}
 function Arknights.AddManualPainting(ent, isEffect)
 	table.insert(Arknights.Stage.ManualPaintEnities, {
 		ent = ent,
@@ -79,6 +69,7 @@ function Arknights.RenderStageEditMode()
 			if(isHovered) then
 				render.DrawBox(p1, angle000, vector000, vector001, Color(255, 255, 255, 100))
 				Arknights.SetSelectedGrid(x, y)
+				posSet = true
 			else
 				render.DrawBox(p1, angle000, vector000, vector001, Color(255, 255, 255, 10))
 			end
@@ -86,6 +77,7 @@ function Arknights.RenderStageEditMode()
 		end
 	end
 	cam.IgnoreZ(false)
+	Arknights.Stage.IsHoveringStagePlane = (intersection && Arknights.IsHovered(origin, origin + Vector(end1, end2), intersection.x, intersection.y)) || false
 end
 
 function Arknights.IsInScreen(x, y)
@@ -168,24 +160,26 @@ function Arknights.RenderStage()
 	cam.Start2D()
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	cam.End2D()
-	Arknights.RenderStageEditMode()
 	Arknights.CalculateScreenPosition()
 end
 
 function Arknights.RenderArknightsEntities()
+	render.SuppressEngineLighting(true)
 	for k,v in pairs(Arknights.Stage.ManualPaintEnities) do
 		if(!IsValid(v.ent)) then
 			Arknights.Stage.ManualPaintEnities[k] = nil
 			continue
 		end
-		v.ent:Draw(true, true)
+		v.ent:Draw(true, true, true)
 	end
+	render.SuppressEngineLighting(false)
 end
 
-hook.Add("PreDrawOpaqueRenderables", "Arknights_PostDrawOpaqueRenderables", function()
+hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", function()
 	local gameactive = Arknights.IsGameActive()
 	Arknights_DrawHUD = !gameactive
 	if(!gameactive) then return end
 	Arknights.RenderStage()
 	Arknights.RenderArknightsEntities()
+	Arknights.RenderStageEditMode()
 end)

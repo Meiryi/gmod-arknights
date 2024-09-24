@@ -64,13 +64,36 @@ function Arknights.LevelMakerUI()
 			end,
 			passfunc = function(text)
 				local mapID = bit.tohex(math.random(1048576, 16777215), 6)
+				local defaultStructures = {}
+				local tall = 8 - 1
+				local wide = 16 - 1
+				--[[
+					Types of structures:
+						ground = Ground tile
+						ranged = High ground tile
+						wall = Wall tile
+						kill = Kill tile
+				]]
+				for x = 0, tall do
+					if(!defaultStructures[x]) then
+						defaultStructures[x] = {}
+					end
+					for y = 0, wide do
+						defaultStructures[x][y] = {
+							type = "ground",
+							offset = -Vector(24, 24, 24),
+							material = "default",
+						}
+					end
+				end
 				local mapData = {
 					MapID = mapID,
 					MapName = text,
 					Author = LocalPlayer():SteamID64(),
 					Enemies = {},
+					Spawns = {},
 					Paths = {},
-					Structures = {},
+					Structures = defaultStructures,
 					Structures_Details = {},
 					Background = "arknights/torappu/map/TX_LMC_BG.png",
 					CreationDate = os.time(),

@@ -14,6 +14,6 @@ function Arknights.FPSCounter()
 end
 
 hook.Add("DrawOverlay", "Arknights_ScreenEffects", function()
-	if(!Arknights.IsGameActive()) then return end
+	if(!Arknights.IsGameActive() || Arknights.TakingScreenshot) then return end
 	Arknights.FPSCounter()
 end)

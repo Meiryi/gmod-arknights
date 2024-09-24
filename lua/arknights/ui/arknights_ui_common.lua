@@ -6,24 +6,26 @@ function Arknights.GetScreenTexture()
 end
 
 function Arknights.FadeTransition(func)
-	local ui = Arknights.CreatePanel(nil, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local ui = Arknights.CreatePanel(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0))
 	ui:MakePopup()
 	ui:SetZPos(32767)
 	local switch = false
 	local alpha = 0
-	ui.Paint = function()
-	if(!switch) then
-		alpha = math.Clamp(alpha + Arknights.GetFixedValue(14), 0, 255)
-		if(alpha >= 255) then
-			func()
-			switch = true
-		end
-	else
-		alpha = math.Clamp(alpha - Arknights.GetFixedValue(14), 0, 255)
-		if(alpha <= 0) then
-			ui:Remove()
+	ui.Think = function()
+		if(!switch) then
+			alpha = math.Clamp(alpha + Arknights.GetFixedValue(14), 0, 255)
+			if(alpha >= 255) then
+				func()
+				switch = true
+			end
+		else
+			alpha = math.Clamp(alpha - Arknights.GetFixedValue(14), 0, 255)
+			if(alpha <= 0) then
+				ui:Remove()
+			end
 		end
 	end
+	ui.Paint = function()
 		draw.RoundedBox(0, 0, 0, ui:GetWide(), ui:GetTall(), Color(0, 0, 0, alpha))
 	end
 end
