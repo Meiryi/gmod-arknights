@@ -56,7 +56,7 @@ function Arknights.LoadingScreen(loadingbg, funcs)
 			staytime = Arknights.CurTimeUnScaled + 1
 			if(alpha >= 255) then
 				if(funcs.fulldim && !funcstate.fulldim) then
-					funcs.fulldim()
+					Arknights.NextFrameFunc(funcs.fulldim)
 					funcstate.fulldim = true
 				end
 				switch = true
@@ -83,7 +83,7 @@ function Arknights.LoadingScreen(loadingbg, funcs)
 			end
 			if(alpha <= 0) then
 				if(funcs.midloading && !funcstate.midloading) then
-					funcs.midloading()
+					Arknights.NextFrameFunc(funcs.midloading)
 					funcstate.midloading = true
 				end
 				finishedloading = true

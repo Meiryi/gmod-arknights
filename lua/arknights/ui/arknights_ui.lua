@@ -1,7 +1,7 @@
 Arknights.GameActive = Arknights.GameActive || false
 Arknights.GameFrame = Arknights.GameFrame || nil
 
-local skip = true
+local skip = false
 local reload = true
 function Arknights.Launch()
 	if(IsValid(Arknights.GameFrame)) then
@@ -53,6 +53,10 @@ end
 
 function Arknights.IsGameActive()
 	return IsValid(Arknights.GameFrame)
+end
+
+function Arknights.IsGameFrameVisible()
+	return Arknights.GameFrame.BasePanel:IsVisible()
 end
 
 function Arknights.DirectToHome()

@@ -39,10 +39,11 @@ function Arknights.CreatePanelMat(parent, x, y, w, h, mat, color)
     local panel = vgui.Create("DPanel", parent)
         panel:SetPos(x, y)
         panel:SetSize(w, h)
+        panel.mat = mat
         panel.Paint2x = function() end
         panel.Paint = function()
             surface.SetDrawColor(color.r, color.g, color.b, color.a)
-            surface.SetMaterial(mat)
+            surface.SetMaterial(panel.mat)
             surface.DrawTexturedRect(0, 0, w, h)
             panel.Paint2x()
         end

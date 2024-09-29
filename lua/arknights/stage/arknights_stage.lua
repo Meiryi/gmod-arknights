@@ -56,6 +56,11 @@ function Arknights.RemoveStageStructureEntities(x, y)
 	Arknights.Stage.StructuresEntList[x][y] = nil
 end
 
+function Arknights.SetStructureMaterial(structure, material)
+	local material = Arknights.GetCachedMaterial(material)
+	structure:SetMaterial(material)
+end
+
 function Arknights.RemoveAllStageStructureEntities()
 	for k,v in pairs(Arknights.Stage.StructuresEntList) do
 		for x,y in pairs(v) do

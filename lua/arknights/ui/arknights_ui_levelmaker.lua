@@ -82,7 +82,9 @@ function Arknights.LevelMakerUI()
 						defaultStructures[x][y] = {
 							type = "ground",
 							offset = -Vector(24, 24, 24),
+							gridoffset = Vector(0, 0, 0),
 							material = "default",
+							deployable = true,
 						}
 					end
 				end
@@ -104,9 +106,15 @@ function Arknights.LevelMakerUI()
 					},
 				}
 				local ctx = util.Compress(util.TableToJSON(mapData))
-				Arknights.FadeTransition(function()
-					Arknights.StartStage(mapData, true)
-				end)
+				Arknights.LoadingScreen("arknights/torappu/loadingillusts/default.png", {
+					midloading = function()
+						Arknights.StageMaker.GetMaterials()
+						Arknights.StageMaker.CacheMaterial()
+					end,
+					finishedloading = function()
+						Arknights.StartStage(mapData, true)
+					end,
+				})
 				file.Write("arknights/locallevels/"..mapID..".dat", ctx)
 			end,
 		})

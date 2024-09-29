@@ -1,6 +1,10 @@
 Arknights.Stage.CursorPos = {x = 0, y = 0}
 Arknights.Stage.CursorDir = Vector(0, 0, 0)
 
+render_DrawLine = render.DrawLine
+render_DrawBox = render.DrawBox
+render_DrawWireframeBox = render.DrawWireframeBox
+
 hook.Add("CalcView", "Arknights_CalcView", function(ply, pos, angles, fov)
 	if(!Arknights.IsGameActive()) then return end
 	local view = {
@@ -15,7 +19,9 @@ end)
 Arknights_DrawHUD = true
 
 hook.Add( "HUDShouldDraw", "Arknights_DisableHUD", function(name)
-	return Arknights_DrawHUD
+	if(!Arknights_DrawHUD) then
+		return false
+	end
 end)
 
 Arknights_DisableHUD = Arknights_DisableHUD || false
@@ -36,6 +42,11 @@ local vector005 = Vector(5, 5, 5)
 local vector000 = Vector(0, 0, 0)
 local vector111 = Vector(1, 1, 1)
 local vector001 = Vector(48, 48, 1)
+local mins, maxs = Vector(0, 0, 0), Vector(48, 48, 0)
+local color1 = Color(255, 255, 255, 100)
+local color2 = Color(255, 255, 255, 10)
+local color_red = Color(255, 100, 100, 255)
+local color_gray = Color(80, 80, 80, 255)
 function Arknights.RenderStageEditMode()
 	--if(!Arknights.Stage.Editmode) then return end
 	local origin = Arknights.Stage.StructureOrigin
@@ -48,32 +59,40 @@ function Arknights.RenderStageEditMode()
 	local size_2x = size * 2
 	local vec = Vector(size, size, 0)
 	local intersection = util.IntersectRayWithPlane(Arknights.Stage.ViewPointOrigin, dir, origin, Vector(0, 0, 1))
+	local _x, _y = -32767, -32767
+	if(intersection) then
+		_x = math.floor((intersection.x - origin.x) / size)
+		_y = math.floor((intersection.y - origin.y) / size)
+	end
 	cam.IgnoreZ(true)
-	for i = 0, gridx do
-		local x = origin.x + (i * size)
-		render.DrawLine(Vector(x, origin.y, origin.z), Vector(x, origin.y + end2, origin.z), Color(255, 255, 255), true)
-	end
-	for i = 0 , gridy do
-		local y = origin.y + (i * size)
-		render.DrawLine(Vector(origin.x, y, origin.z), Vector(origin.x + end1, y, origin.z), Color(255, 255, 255), true)
-	end
 	for x = 0, max_x do
 		for y = 0, max_y do
 			local p1 = origin + Vector(x * size, y * size, 0)
-			local p2 = p1 + vec
-			local pos_center = origin + Vector((x * size) + size_m, (y * size) + size_m, 0)
-			local isHovered = false
-			if(intersection) then
-				isHovered = Arknights.IsHovered(p1, p2, intersection.x, intersection.y)
+			local isHovered = (_x == x && _y == y)
+			local strdata = Arknights.GetHoveredStructure(x, y)
+			local offs = vector000
+			local deployable = true
+			if(strdata) then
+				deployable = strdata.deployable
+				offs = strdata.gridoffset
+				p1 = p1 + offs
 			end
 			if(isHovered) then
-				render.DrawBox(p1, angle000, vector000, vector001, Color(255, 255, 255, 100))
+				render_DrawBox(p1, angle000, vector000, vector001, color1)
 				Arknights.SetSelectedGrid(x, y)
 				posSet = true
 			else
-				render.DrawBox(p1, angle000, vector000, vector001, Color(255, 255, 255, 10))
+				render_DrawBox(p1, angle000, vector000, vector001, color2)
 			end
-			render.DrawBox(pos_center, angle000, -vector111, vector111, Color(255, 255, 255, 255))
+			if(strdata) then
+				if(deployable) then
+					render_DrawWireframeBox(p1, angle000, mins, maxs, color_white)
+				else
+					render_DrawWireframeBox(p1, angle000, mins, maxs, color_red)
+				end
+			else
+				render_DrawWireframeBox(p1, angle000, mins, maxs, color_gray)
+			end
 		end
 	end
 	cam.IgnoreZ(false)
@@ -178,7 +197,7 @@ end
 hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", function()
 	local gameactive = Arknights.IsGameActive()
 	Arknights_DrawHUD = !gameactive
-	if(!gameactive) then return end
+	if(!gameactive || Arknights.IsGameFrameVisible()) then return end
 	Arknights.RenderStage()
 	Arknights.RenderArknightsEntities()
 	Arknights.RenderStageEditMode()

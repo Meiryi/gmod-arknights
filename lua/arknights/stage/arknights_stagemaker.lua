@@ -31,16 +31,36 @@ end
 
 Arknights.StageMaker.SelectedMode = nil
 Arknights.StageMaker.BlockType = "ground"
+Arknights.StageMaker.CurrentMaterial = "metal2t"
 
 --[[
 	Edit this function to add more structures, next time start coding from here
 ]]
-function Arknights.GetStructureData(id)
-	local data = {
+local tiledata = {
+	ground = {
 		type = "ground",
 		offset = -Vector(24, 24, 24),
+		gridoffset = Vector(0, 0, 0),
 		material = "default",
-	}
+		deployable = true,
+	},
+	ranged = {
+		type = "ranged",
+		offset = -Vector(24, 24, 0),
+		gridoffset = Vector(0, 0, 24),
+		material = "default",
+		deployable = true,
+	},
+	wall = {
+		type = "wall",
+		offset = -Vector(24, 24, 0),
+		gridoffset = Vector(0, 0, 24),
+		material = "default",
+		deployable = false,
+	},
+}
+function Arknights.GetStructureData(id)
+	local data = tiledata[id] || tiledata
 	return data
 end
 
@@ -70,6 +90,9 @@ function Arknights.SetStructure(x, y, id)
 	if(prevData && prevData.type == data.type) then
 		return
 	end
+	if(IsValid(Arknights.GetHoveredStructureEntity(x, y))) then
+		Arknights.RemoveStageStructureEntities(x, y)
+	end
 	Arknights.Stage.Structures[x][y] = data
 	Arknights.CreateStructureEntity(x, y, data)
 	Arknights.SaveLevelData()
@@ -88,7 +111,7 @@ function Arknights.StageMaker.ClickedFunc()
 	end
 	local x, y = Arknights.GetSelectedGrid()
 	if(left_or_right) then
-		Arknights.SetStructure(x, y, id)
+		Arknights.SetStructure(x, y, Arknights.StageMaker.BlockType)
 	else
 		Arknights.RemoveStructure(x, y)
 	end
