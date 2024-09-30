@@ -651,6 +651,7 @@ function Arknights.PopupNotify(text, clickfunc)
 				ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue(15), 0, 255)
 			end
 			ui:SetAlpha(ui.Alpha)
+			Arknights.StageMaker.StopClickTime = SysTime() + 0.25
 		end
 		local vertical_margin = AKScrH() * 0.35
 		local inner = Arknights.CreatePanelMat(ui, 0, vertical_margin, AKScrW(), AKScrH() - (vertical_margin * 2), Arknights.GetCachedMaterial("arknights/torappu/bg/bg9.png"),Color(50, 50, 50, 255))
@@ -694,6 +695,7 @@ function Arknights.PopupTextEntryMenu(data)
 				ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue(15), 0, 255)
 			end
 			ui:SetAlpha(ui.Alpha)
+			Arknights.StageMaker.StopClickTime = SysTime() + 0.25
 		end
 		local iconoffs = AKScreenScaleH(2)
 		local vertical_margin = AKScrH() * 0.4

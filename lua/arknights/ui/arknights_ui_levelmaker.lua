@@ -79,13 +79,7 @@ function Arknights.LevelMakerUI()
 						defaultStructures[x] = {}
 					end
 					for y = 0, wide do
-						defaultStructures[x][y] = {
-							type = "ground",
-							offset = -Vector(24, 24, 24),
-							gridoffset = Vector(0, 0, 0),
-							material = "default",
-							deployable = true,
-						}
+						defaultStructures[x][y] = Arknights.StageMaker.TileData.ground
 					end
 				end
 				local mapData = {

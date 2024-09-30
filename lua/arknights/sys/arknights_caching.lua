@@ -18,7 +18,8 @@ function Arknights.GetCachedVMaterial(material)
 			["$basetexture"] = material,
 			["$translucent"] = 1,
 			["$vertexalpha"] = 1,
-			["$vertexcolor"] = 1
+			["$vertexcolor"] = 1,
+			["$noclull"] = 0,
 		})
 		Arknights.MaterialIndex = Arknights.MaterialIndex + 1
 	end

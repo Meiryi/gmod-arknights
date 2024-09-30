@@ -167,3 +167,13 @@ surface.CreateFont("Arknights_StageMaker_2x", {
 	scanlines = 0,
 	antialias = true,
 })
+
+surface.CreateFont("Arknights_StageMaker_ToolTip", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(12),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})

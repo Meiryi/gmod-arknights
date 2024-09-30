@@ -29,6 +29,11 @@ Arknights.StageMaker.BackgroundID = {
 	background11 = "arknights/torappu/map/TX_SalViento_BG.png",
 }
 
+function Arknights.ShowToolTip(tip, time)
+	Arknights.ToolTipText = tip
+	Arknights.ToolTipTextTime = SysTime() + time
+end
+
 local spacing = ScreenScaleH(4)
 function Arknights.AutoResizePanel(ui, pnl, space)
 	ui.Height = ui.Height + pnl:GetTall() + (space || spacing)
@@ -139,6 +144,7 @@ function Arknights.StageMaker.MaterialButton(ui)
 	local height = ScreenScaleH(48)
 	local innerspacing = ScreenScaleH(2)
 	local basepnl = Arknights.CreatePanel(ui, spacing, 0, wide, height, Color(30, 30, 30, 255))
+	basepnl:Dock(TOP)
 	local size = height - (innerspacing * 2)
 	local materialPreview = Arknights.CreatePanelMat(basepnl, innerspacing, innerspacing, size, size, Arknights.GetCachedMaterial(Arknights.StageMaker.CurrentMaterial), Color(255, 255, 255, 255))
 	local _, _, materialLabel = Arknights.CreateLabel(basepnl, size + (innerspacing * 3), basepnl:GetTall() * 0.25, Arknights.StageMaker.CurrentMaterial, "Arknights_StageMaker_0.5x", Color(255, 255, 255, 255))
@@ -442,17 +448,23 @@ Arknights.StageMaker.ToolTabs = {
 			]]
 			Arknights.StageMaker.CreateDesc(ui, "Tile Type")
 			Arknights.StageMaker.CreateVariableSwitch(ui, "BlockType", {
-				["Ground Tile"] = "ground",
-				["High Ground Tile"] = "ranged",
 				["High Ground Tile (Undeplayable)"] = "wall",
-				--["Kill Tile"] = "kill",
+				["Ground Tile (Undeplayable)"] = "ground2",
+				["High Ground Tile"] = "ranged",
+				["Ground Tile"] = "ground",
 			})
 		end,
 	},
 	{
 		title = "Texturing",
 		func = function(ui)
+			Arknights.StageMaker.CreateDesc(ui, "Materials")
 			Arknights.StageMaker.MaterialButton(ui)
+			Arknights.StageMaker.CreateDesc(ui, "Texturing Mode")
+			Arknights.StageMaker.CreateVariableSwitch(ui, "TexturingMode", {
+				["Top"] = 1,
+				["Side"] = 2,
+			})
 		end,
 	},
 	{
@@ -593,8 +605,42 @@ function Arknights.CreateStageUI()
 		end
 	end
 
-	local w, h = ScrW() * 0.3, ScrH() * 0.075
+	local w, h = ScrW() * 0.2, ScrH() * 0.065
 	local toolbar = Arknights.CreatePanel(ui, ScrW() * 0.5 - w * 0.5, 0, w, h, Color(30, 30, 30, 255))
+	local tools = {
+		{
+			material = "arknights/torappu/common_icon/icon_new_block.png",
+			id = "build",
+			tip = "Structure Tool",
+		},
+		{
+			material = "arknights/torappu/common_icon/icon_paint.png",
+			id = "texturing",
+			tip = "Texturing Tool",
+		},
+		{
+			material = "arknights/torappu/common_icon/icon_link.png",
+			id = "ainode",
+			tip = "Path Node Tool",
+		},
+	}
+	local spacing = ScreenScaleH(2)
+	local height = toolbar:GetTall() - (spacing * 2)
+	local margin = toolbar:GetWide() / #tools
+	local gap = margin * 0.25
+	local nextX = gap
+	for k,v in ipairs(tools) do
+		local button = Arknights.CreateMatButton(toolbar, nextX, spacing, height, height, Arknights.GetCachedMaterial(v.material), function()
+			Arknights.Stage.Tool = v.id
+			Arknights.ButtonClickSound("select")
+		end)
+		button.Think = function()
+			if(button:IsHovered()) then
+				Arknights.ShowToolTip(v.tip, 1)
+			end
+		end
+		nextX = nextX + margin
+	end
 
 	Arknights.BackButton(ui, function()
 		Arknights.FadeTransition(function()

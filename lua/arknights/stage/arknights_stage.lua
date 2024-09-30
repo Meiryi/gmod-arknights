@@ -74,13 +74,9 @@ end
 
 function Arknights.RemoveOutOfBoundsStructure()
 	local maxX, maxY = Arknights.Stage.Size.w - 1, Arknights.Stage.Size.h - 1
-	for k,v in pairs(Arknights.Stage.StructuresEntList) do
+	for k,v in pairs(Arknights.Stage.Structures) do
 		for x,y in pairs(v) do
 			if(k <= maxX && x <= maxY) then continue end
-			if(IsValid(y)) then
-				y:Remove()
-			end
-			Arknights.Stage.StructuresEntList[k][x] = nil
 			if(Arknights.Stage.Structures[k]) then
 				Arknights.Stage.Structures[k][x] = nil
 			end
@@ -126,12 +122,6 @@ function Arknights.StartStage(stageData, editmode)
 		Arknights.Stage[k] = v
 	end
 	Arknights.CalculateScreenPosition()
-	
-	for k,v in pairs(Arknights.Stage.Structures) do
-		for x,y in pairs(v) do
-			Arknights.CreateStructureEntity(k, x, y)
-		end
-	end
 	Arknights.CreateStageUI()
 end
 

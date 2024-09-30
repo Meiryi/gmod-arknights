@@ -4,6 +4,8 @@ Arknights.Stage.CursorDir = Vector(0, 0, 0)
 render_DrawLine = render.DrawLine
 render_DrawBox = render.DrawBox
 render_DrawWireframeBox = render.DrawWireframeBox
+render_DrawQuadEasy = render.DrawQuadEasy
+render_SetMaterial = render.SetMaterial
 
 hook.Add("CalcView", "Arknights_CalcView", function(ply, pos, angles, fov)
 	if(!Arknights.IsGameActive()) then return end
@@ -11,7 +13,7 @@ hook.Add("CalcView", "Arknights_CalcView", function(ply, pos, angles, fov)
 		origin = Arknights.Stage.ViewPointOrigin,
 		angles = Arknights.Stage.ViewPointAngle,
 		fov = Arknights.Stage.ViewPointFOV,
-		drawviewer = true
+		drawviewer = true,
 	}
 	return view
 end)
@@ -37,17 +39,29 @@ function Arknights.IsHovered(p1, p2, x, y)
 	return (x >= p1.x && y >= p1.y && x <= p2.x && y <= p2.y)
 end
 
+Arknights.ToolTipText = ""
+Arknights.ToolTipTextAlpha = 0
+Arknights.ToolTipTextTime = 0
+
 local angle000 = Angle(0, 0, 0)
 local vector005 = Vector(5, 5, 5)
 local vector000 = Vector(0, 0, 0)
 local vector111 = Vector(1, 1, 1)
 local vector001 = Vector(48, 48, 1)
+local vectoroffset = Vector(24, 24, 0)
 local mins, maxs = Vector(0, 0, 0), Vector(48, 48, 0)
 local color1 = Color(255, 255, 255, 100)
 local color2 = Color(255, 255, 255, 10)
 local color_red = Color(255, 100, 100, 255)
 local color_gray = Color(80, 80, 80, 255)
+local normal_up = Vector(0, 0, 1)
+local normal_side_1 = Vector(1, 0, 0)
+local normal_side_2 = Vector(-1, 0, 0)
+local normal_side_3 = Vector(0, 1, 0)
+local normal_side_4 = Vector(0, -1, 0)
+local framemat = Material("arknights/meiryi/frame.png")
 function Arknights.RenderStageEditMode()
+	if(Arknights.TakingScreenshot) then return end
 	--if(!Arknights.Stage.Editmode) then return end
 	local origin = Arknights.Stage.StructureOrigin
 	local gridx, gridy = Arknights.Stage.Size.w, Arknights.Stage.Size.h
@@ -55,9 +69,6 @@ function Arknights.RenderStageEditMode()
 	local end1, end2 = gridx * size, gridy * size
 	local dir = Arknights.Stage.CursorDir
 	local max_x, max_y = gridx - 1, gridy - 1
-	local size_m = size * 0.5
-	local size_2x = size * 2
-	local vec = Vector(size, size, 0)
 	local intersection = util.IntersectRayWithPlane(Arknights.Stage.ViewPointOrigin, dir, origin, Vector(0, 0, 1))
 	local _x, _y = -32767, -32767
 	if(intersection) then
@@ -65,6 +76,7 @@ function Arknights.RenderStageEditMode()
 		_y = math.floor((intersection.y - origin.y) / size)
 	end
 	cam.IgnoreZ(true)
+	render.SetMaterial(framemat)
 	for x = 0, max_x do
 		for y = 0, max_y do
 			local p1 = origin + Vector(x * size, y * size, 0)
@@ -77,21 +89,21 @@ function Arknights.RenderStageEditMode()
 				offs = strdata.gridoffset
 				p1 = p1 + offs
 			end
+			if(strdata) then
+				if(deployable) then
+					render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
+				else
+					render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_red)
+				end
+			else
+				render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_gray)
+			end
 			if(isHovered) then
+				render.SetColorMaterial()
 				render_DrawBox(p1, angle000, vector000, vector001, color1)
 				Arknights.SetSelectedGrid(x, y)
 				posSet = true
-			else
-				render_DrawBox(p1, angle000, vector000, vector001, color2)
-			end
-			if(strdata) then
-				if(deployable) then
-					render_DrawWireframeBox(p1, angle000, mins, maxs, color_white)
-				else
-					render_DrawWireframeBox(p1, angle000, mins, maxs, color_red)
-				end
-			else
-				render_DrawWireframeBox(p1, angle000, mins, maxs, color_gray)
+				render.SetMaterial(framemat)
 			end
 		end
 	end
@@ -168,10 +180,14 @@ function Arknights.CalculateScreenPosition()
 end
 
 local bgMaterial = Material("arknights/torappu/map/TX_LMC_BG.png")
+local defMaterial = nil --hunter/myplastic
 local lastbg = ""
+local offset_1 = Vector(48, 24, -24)
+local offset_2 = Vector(24, 0, -24)
+local offset_3 = Vector(24, 48, -24)
 function Arknights.RenderStage()
 	if(lastbg != Arknights.Stage.Background) then
-		bgMaterial = Material(Arknights.Stage.Background, "smooth")
+		bgMaterial = Arknights.GetCachedMaterial(Arknights.Stage.Background)
 		lastbg = Arknights.Stage.Background
 	end
 	surface.SetDrawColor(255, 255, 255, 255)
@@ -180,6 +196,50 @@ function Arknights.RenderStage()
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	cam.End2D()
 	Arknights.CalculateScreenPosition()
+	local origin = Arknights.Stage.StructureOrigin
+	local size = Arknights.Stage.GridSize
+	local offset = size * 0.5
+	local height = 512
+	if(!defMaterial) then
+		defMaterial = Arknights.GetCachedVMaterial("hunter/myplastic")
+	end
+	local strdata = Arknights.Stage.Structures
+	for x, data in pairs(strdata) do
+		for y, structure in pairs(data) do
+			local p1 = origin + Vector(x * size, y * size, 0) + structure.gridoffset
+			if(structure.material == "default") then
+				render_SetMaterial(defMaterial)
+			else
+				render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
+			end
+			render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
+
+			if(structure.sidematerial == "default") then
+				render_SetMaterial(defMaterial)
+			else
+				render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
+			end
+
+			local nextY = strdata[x + 1]
+			local currentX = strdata[x]
+			if(structure.type == "ranged" ||structure.type == "wall") then
+				render_DrawQuadEasy(p1 + offset_1, normal_side_1, size, size, color_white)
+				render_DrawQuadEasy(p1 + offset_2, normal_side_4, size, size, color_white)
+				render_DrawQuadEasy(p1 + offset_3, normal_side_3, size, size, color_white)
+				continue
+			end
+			if(!nextY || !nextY[y]) then
+				render_DrawQuadEasy(p1 + offset_1, normal_side_1, size, size, color_white)
+			end
+			if(!currentX[y - 1]) then
+				render_DrawQuadEasy(p1 + offset_2, normal_side_4, size, size, color_white)
+			end
+			if(!currentX[y + 1]) then
+				render_DrawQuadEasy(p1 + offset_3, normal_side_3, size, size, color_white)
+			end
+		end
+	end
+	render.SetColorMaterial()
 end
 
 function Arknights.RenderArknightsEntities()
@@ -198,7 +258,30 @@ hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", funct
 	local gameactive = Arknights.IsGameActive()
 	Arknights_DrawHUD = !gameactive
 	if(!gameactive || Arknights.IsGameFrameVisible()) then return end
+	render.Clear(0, 0, 0, 0, true, true)
+	render.ClearStencil()
 	Arknights.RenderStage()
 	Arknights.RenderArknightsEntities()
 	Arknights.RenderStageEditMode()
+end)
+
+hook.Add("PostRenderVGUI", "Arknights_DrawToolTip", function()
+	cam.Start2D()
+		local spacing = AKScreenScaleH(2)
+		local tw, th = Arknights.GetTextSize("Arknights_StageMaker_ToolTip", Arknights.ToolTipText)
+		local x, y = input.GetCursorPos()
+		x = x + spacing
+		y = y + spacing
+		if(Arknights.ToolTipTextTime > SysTime()) then
+			Arknights.ToolTipTextAlpha = math.Clamp(Arknights.ToolTipTextAlpha + Arknights.GetFixedValue(20), 0, 255)
+		else
+			if(Arknights.ToolTipTextAlpha > 0) then
+				Arknights.ToolTipTextAlpha = math.Clamp(Arknights.ToolTipTextAlpha - Arknights.GetFixedValue(20), 0, 255)
+			end
+		end
+		if(Arknights.ToolTipTextAlpha > 0) then
+			draw.RoundedBox(0, x, y, tw + spacing * 2, th, Color(0, 0, 0, Arknights.ToolTipTextAlpha * 0.5))
+			draw.DrawText(Arknights.ToolTipText, "Arknights_StageMaker_ToolTip", x + spacing, y, Color(255, 255, 255, Arknights.ToolTipTextAlpha), TEXT_ALIGN_LEFT)
+		end
+	cam.End2D()
 end)
