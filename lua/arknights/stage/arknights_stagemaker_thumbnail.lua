@@ -15,9 +15,10 @@ hook.Add("PostRender", "Arknights_Screenshot", function()
 		return
 	end
 	local img = render.Capture({
-		format = "png",
+		format = "jpeg",
 		x = 0,
 		y = 0,
+		quality = 85,
 		w = ScrW(),
 		h = ScrH(),
         alpha = false

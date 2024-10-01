@@ -178,7 +178,7 @@ function Arknights.StageMaker.GetMaterials()
 	if(#Arknights.StageMaker.CachedMaterialPaths > 0) then
 		return Arknights.StageMaker.CachedMaterialPaths
 	end
-	local result = {}
+	local result = {"hunter/myplastic"}
 	for _,path in ipairs(paths) do
 		local p = "materials/"..path.."/*.vmt"
 		if(path == "") then
@@ -610,17 +610,17 @@ function Arknights.CreateStageUI()
 	local tools = {
 		{
 			material = "arknights/torappu/common_icon/icon_new_block.png",
-			id = "build",
+			id = 1,
 			tip = "Structure Tool",
 		},
 		{
 			material = "arknights/torappu/common_icon/icon_paint.png",
-			id = "texturing",
+			id = 2,
 			tip = "Texturing Tool",
 		},
 		{
 			material = "arknights/torappu/common_icon/icon_link.png",
-			id = "ainode",
+			id = 3,
 			tip = "Path Node Tool",
 		},
 	}
@@ -631,24 +631,38 @@ function Arknights.CreateStageUI()
 	local nextX = gap
 	for k,v in ipairs(tools) do
 		local button = Arknights.CreateMatButton(toolbar, nextX, spacing, height, height, Arknights.GetCachedMaterial(v.material), function()
-			Arknights.Stage.Tool = v.id
+			Arknights.StageMaker.SelectedMode = v.id
 			Arknights.ButtonClickSound("select")
 		end)
 		button.Think = function()
 			if(button:IsHovered()) then
-				Arknights.ShowToolTip(v.tip, 1)
+				Arknights.ShowToolTip(v.tip, 0.25)
 			end
+		end
+		button.Alpha = 0
+		button.Paint2x = function()
+			if(Arknights.StageMaker.SelectedMode == v.id) then
+				button.Alpha = math.Clamp(button.Alpha + Arknights.GetFixedValue(2), 0, 25)
+			else
+				button.Alpha = math.Clamp(button.Alpha - Arknights.GetFixedValue(2), 0, 25)
+			end
+			draw.RoundedBox(spacing, 0, 0, button:GetWide(), button:GetTall(), Color(255, 255, 255, button.Alpha))
 		end
 		nextX = nextX + margin
 	end
 
 	Arknights.BackButton(ui, function()
-		Arknights.FadeTransition(function()
-			Arknights.ToggleGameFrame(true)
-			Arknights.IdealMusic = "void"
-			Arknights.RemoveAllStageStructureEntities()
-			ui:Remove()
-		end)
+		if(Arknights.Stage.Editmode) then
+			Arknights.TakeScreenshot()
+		end
+		local func = function()
+			Arknights.FadeTransition(function()
+				Arknights.ToggleGameFrame(true)
+				Arknights.IdealMusic = "void"
+				ui:Remove()
+			end)
+		end
+		Arknights.NextFrameFunc(func)
 	end)
 
 	Arknights.Stage.BasePanel = ui

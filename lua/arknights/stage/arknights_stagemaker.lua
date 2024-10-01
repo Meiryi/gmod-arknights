@@ -29,9 +29,9 @@ function Arknights.SaveLevelData()
 	file.Write("arknights/locallevels/"..Arknights.Stage.MapID..".dat", util.Compress(util.TableToJSON(mapData)))
 end
 
-Arknights.StageMaker.SelectedMode = nil
+Arknights.StageMaker.SelectedMode = 1
 Arknights.StageMaker.BlockType = "ground"
-Arknights.StageMaker.CurrentMaterial = "metal2t"
+Arknights.StageMaker.CurrentMaterial = "hunter/myplastic"
 Arknights.StageMaker.TexturingMode = 1
 
 --[[
@@ -72,13 +72,8 @@ Arknights.StageMaker.TileData = {
 	},
 }
 function Arknights.GetStructureData(id)
-	local data = Arknights.StageMaker.TileData[id]
+	local data = table.Copy(Arknights.StageMaker.TileData[id])
 	return data
-end
-
-function Arknights.GetHoveredStructureEntity(x, y)
-	if(!Arknights.Stage.StructuresEntList[x] || !IsValid(Arknights.Stage.StructuresEntList[x][y])) then return nil end
-	return Arknights.Stage.StructuresEntList[x][y]
 end
 
 function Arknights.GetHoveredStructure(x, y)
@@ -89,8 +84,17 @@ end
 function Arknights.RemoveStructure(x, y)
 	if(!Arknights.Stage.Structures[x]) then return end
 	Arknights.Stage.Structures[x][y] = nil
-	Arknights.RemoveStageStructureEntities(x, y)
 	Arknights.SaveLevelData()
+end
+
+function Arknights.SetStructureMaterial(x, y)
+	local data = Arknights.GetHoveredStructure(x, y)
+	if(!data) then return end
+	if(Arknights.StageMaker.TexturingMode == 1) then
+		Arknights.Stage.Structures[x][y].material = Arknights.StageMaker.CurrentMaterial
+	else
+		Arknights.Stage.Structures[x][y].sidematerial = Arknights.StageMaker.CurrentMaterial
+	end
 end
 
 function Arknights.SetStructure(x, y, id)
@@ -99,10 +103,11 @@ function Arknights.SetStructure(x, y, id)
 	end
 	local prevData = Arknights.GetHoveredStructure(x, y)
 	local data = Arknights.GetStructureData(id)
-	if(prevData && prevData.type == data.type) then
+	if(prevData && prevData.type == data.type && prevData.material == Arknights.StageMaker.CurrentMaterial) then
 		return
 	end
-	Arknights.Stage.Structures[x][y] = data
+	local strdata = data
+	Arknights.Stage.Structures[x][y] = strdata
 	Arknights.SaveLevelData()
 end
 
@@ -119,9 +124,17 @@ function Arknights.StageMaker.ClickedFunc()
 	end
 	local x, y = Arknights.GetSelectedGrid()
 	if(left_or_right) then
-		Arknights.SetStructure(x, y, Arknights.StageMaker.BlockType)
+		if(Arknights.StageMaker.SelectedMode == 1) then
+			Arknights.SetStructure(x, y, Arknights.StageMaker.BlockType)
+		elseif(Arknights.StageMaker.SelectedMode == 2) then
+			Arknights.SetStructureMaterial(x, y)
+		end
 	else
-		Arknights.RemoveStructure(x, y)
+		if(Arknights.StageMaker.SelectedMode == 1) then
+			Arknights.RemoveStructure(x, y)
+		elseif(Arknights.StageMaker.SelectedMode == 2) then
+
+		end
 	end
 	
 end

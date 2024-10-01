@@ -24,6 +24,7 @@ Arknights.Stage.Structures = Arknights.Stage.Structures || {}
 Arknights.Stage.Structures_Details = Arknights.Stage.Structures_Details || {}
 
 Arknights.Stage.StructuresEntList = Arknights.Stage.StructuresEntList || {}
+Arknights.Stage.StructureMeshes = Arknights.Stage.StructureMeshes || {}
 Arknights.Stage.IsHoveringStagePlane = false
 
 function Arknights.CreateDebugOperator()
@@ -50,28 +51,6 @@ function Arknights.RemoveDebugOperator()
 	AKT:Remove()
 end
 
-function Arknights.RemoveStageStructureEntities(x, y)
-	if(!Arknights.Stage.StructuresEntList[x] || !Arknights.Stage.StructuresEntList[x][y] || !IsValid(Arknights.Stage.StructuresEntList[x][y])) then return end
-	Arknights.Stage.StructuresEntList[x][y]:Remove()
-	Arknights.Stage.StructuresEntList[x][y] = nil
-end
-
-function Arknights.SetStructureMaterial(structure, material)
-	local material = Arknights.GetCachedMaterial(material)
-	structure:SetMaterial(material)
-end
-
-function Arknights.RemoveAllStageStructureEntities()
-	for k,v in pairs(Arknights.Stage.StructuresEntList) do
-		for x,y in pairs(v) do
-			if(IsValid(y)) then
-				y:Remove()
-			end
-			Arknights.Stage.StructuresEntList[k][x] = nil
-		end
-	end
-end
-
 function Arknights.RemoveOutOfBoundsStructure()
 	local maxX, maxY = Arknights.Stage.Size.w - 1, Arknights.Stage.Size.h - 1
 	for k,v in pairs(Arknights.Stage.Structures) do
@@ -82,36 +61,6 @@ function Arknights.RemoveOutOfBoundsStructure()
 			end
 		end
 	end
-end
-
-function Arknights.AddStageStructureEntity(ent, x, y)
-	if(!IsValid(ent)) then return end
-	if(!Arknights.Stage.StructuresEntList[x]) then
-		Arknights.Stage.StructuresEntList[x] = {}
-	end
-	Arknights.Stage.StructuresEntList[x][y] = ent
-end
-
-function Arknights.ReCalculateAllStructurePosition()
-	local origin = Arknights.Stage.StructureOrigin
-	local size = Arknights.Stage.GridSize
-	for k,v in pairs(Arknights.Stage.StructuresEntList) do
-		for x,y in pairs(v) do
-			if(IsValid(y)) then
-				y:SetPos(origin + Vector((k + 1) * size, (x + 1) * size, 0) + y.offset)
-			end
-		end
-	end
-end
-
-function Arknights.CreateStructureEntity(x, y, data)
-	local origin = Arknights.Stage.StructureOrigin
-	local block = ents.CreateClientside("arknights_stage_structure")
-		block:Spawn()
-		block.type = data.type
-		block.offset = data.offset
-		block:SetPos(origin + Vector((x + 1) * Arknights.Stage.GridSize, (y + 1) * Arknights.Stage.GridSize, 0) + data.offset)
-		Arknights.AddStageStructureEntity(block, x, y)
 end
 
 function Arknights.StartStage(stageData, editmode)

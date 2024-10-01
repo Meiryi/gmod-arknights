@@ -179,6 +179,10 @@ function Arknights.CalculateScreenPosition()
 	Arknights.Stage.StructureOrigin = finalvec
 end
 
+local function isgroundtile(id)
+	return (id == "ground" || id == "ground2")
+end
+
 local bgMaterial = Material("arknights/torappu/map/TX_LMC_BG.png")
 local defMaterial = nil --hunter/myplastic
 local lastbg = ""
@@ -196,50 +200,59 @@ function Arknights.RenderStage()
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	cam.End2D()
 	Arknights.CalculateScreenPosition()
-	local origin = Arknights.Stage.StructureOrigin
-	local size = Arknights.Stage.GridSize
-	local offset = size * 0.5
-	local height = 512
-	if(!defMaterial) then
-		defMaterial = Arknights.GetCachedVMaterial("hunter/myplastic")
-	end
-	local strdata = Arknights.Stage.Structures
-	for x, data in pairs(strdata) do
-		for y, structure in pairs(data) do
-			local p1 = origin + Vector(x * size, y * size, 0) + structure.gridoffset
-			if(structure.material == "default") then
-				render_SetMaterial(defMaterial)
-			else
-				render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
-			end
-			render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
-
-			if(structure.sidematerial == "default") then
-				render_SetMaterial(defMaterial)
-			else
-				render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
-			end
-
-			local nextY = strdata[x + 1]
-			local currentX = strdata[x]
-			if(structure.type == "ranged" ||structure.type == "wall") then
-				render_DrawQuadEasy(p1 + offset_1, normal_side_1, size, size, color_white)
-				render_DrawQuadEasy(p1 + offset_2, normal_side_4, size, size, color_white)
-				render_DrawQuadEasy(p1 + offset_3, normal_side_3, size, size, color_white)
-				continue
-			end
-			if(!nextY || !nextY[y]) then
-				render_DrawQuadEasy(p1 + offset_1, normal_side_1, size, size, color_white)
-			end
-			if(!currentX[y - 1]) then
-				render_DrawQuadEasy(p1 + offset_2, normal_side_4, size, size, color_white)
-			end
-			if(!currentX[y + 1]) then
-				render_DrawQuadEasy(p1 + offset_3, normal_side_3, size, size, color_white)
+	if(Arknights.Settings.RenderMode == 1) then
+		local origin = Arknights.Stage.StructureOrigin
+		local size = Arknights.Stage.GridSize
+		local offset = size * 0.5
+		local height = 512
+		if(!defMaterial) then
+			defMaterial = Arknights.GetCachedVMaterial("hunter/myplastic")
+		end
+		render_SetMaterial(defMaterial)
+		local strdata = Arknights.Stage.Structures
+		for x, data in pairs(strdata) do
+			for y, structure in pairs(data) do
+				local p1 = origin + Vector(x * size, y * size, 0) + structure.gridoffset
+				if(structure.material == "default") then
+					render_SetMaterial(defMaterial)
+				else
+					render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
+				end
+				render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
+				if(structure.sidematerial == "default") then
+					render_SetMaterial(defMaterial)
+				else
+					render_SetMaterial(Arknights.GetCachedMaterial(structure.sidematerial))
+				end
+				local nextY = strdata[x + 1]
+				local currentX = strdata[x]
+				if(structure.type == "ranged" ||structure.type == "wall") then
+					if(!nextY || !nextY[y] || isgroundtile(nextY[y].type)) then
+						render_DrawQuadEasy(p1 + offset_1, normal_side_1, size, size, color_white)
+					end
+					if(!currentX[y - 1] || isgroundtile(currentX[y - 1].type)) then
+						render_DrawQuadEasy(p1 + offset_2, normal_side_4, size, size, color_white)
+					end
+					if(!currentX[y + 1] || isgroundtile(currentX[y + 1].type)) then
+						render_DrawQuadEasy(p1 + offset_3, normal_side_3, size, size, color_white)
+					end
+					continue
+				end
+				if(!nextY || !nextY[y]) then
+					render_DrawQuadEasy(p1 + offset_1, normal_side_1, size, size, color_white)
+				end
+				if(!currentX[y - 1]) then
+					render_DrawQuadEasy(p1 + offset_2, normal_side_4, size, size, color_white)
+				end
+				if(!currentX[y + 1]) then
+					render_DrawQuadEasy(p1 + offset_3, normal_side_3, size, size, color_white)
+				end
 			end
 		end
+		render.SetColorMaterial()
+	elseif(Arknights.Settings.RenderMode == 2) then
+		
 	end
-	render.SetColorMaterial()
 end
 
 function Arknights.RenderArknightsEntities()

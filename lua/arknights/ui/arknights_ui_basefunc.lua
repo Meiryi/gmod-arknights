@@ -293,10 +293,10 @@ function Arknights.CreateMatButton(parent, x, y, w, h, mat, func)
     bg:NoClipping(false)
     bg.Paint2x = function() end
     bg.Paint = function()
+        bg.Paint2x()
         surface.SetDrawColor(clr, clr, clr, 255)
         surface.SetMaterial(mat)
         surface.DrawTexturedRect(0, 0, w, h)
-        bg.Paint2x()
     end
     function bg:OnMousePressed()
         func()
