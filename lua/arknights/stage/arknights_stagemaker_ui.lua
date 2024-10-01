@@ -368,6 +368,55 @@ function Arknights.StageMaker.CreateVariableSwitch(ui, settings, var)
 	Arknights.AutoResizePanel(ui, basepnl)
 end
 
+Arknights.ReloadPathList = false
+function Arknights.CreatePathList(ui)
+	local wide = ui:GetWide() - (spacing * 2)
+	local basepnl = Arknights.CreateScroll(ui, spacing, 0, wide, ScreenScaleH(150), Color(30, 30, 30, 255))
+		basepnl:Dock(TOP)
+		basepnl:DockMargin(spacing, 0, 0, spacing)
+
+		basepnl.ReloadTime = 0
+		basepnl.ReloadList = function()
+			basepnl:Clear()
+			local paths = Arknights.Stage.Paths
+			for k,v in pairs(paths) do
+				local pathpnl = Arknights.CreatePanel(basepnl, 0, 0, basepnl:GetWide(), ScreenScaleH(24), Color(20, 20, 20, 255))
+					pathpnl:Dock(TOP)
+					pathpnl:DockMargin(0, 0, 0, spacing)
+					local _, _, label = Arknights.CreateLabel(pathpnl, spacing, pathpnl:GetTall() * 0.5, k.." ["..#v.." Connections]", "Arknights_StageMaker_0.5x", Color(255, 255, 255, 255))
+					label.CentVer()
+					local btn = Arknights.InvisButton(pathpnl, 0, 0, pathpnl:GetWide(), pathpnl:GetTall(), function()
+						if(Arknights.StageMaker.SelectedPathNode == k) then
+							Arknights.StageMaker.SelectedPathNode = nil
+						else
+							Arknights.StageMaker.SelectedPathNode = k
+						end
+						Arknights.ButtonClickSound("select")
+					end)
+					btn.Alpha = 0
+					btn.Paint = function()
+						if(btn:IsHovered() || Arknights.StageMaker.SelectedPathNode == k) then
+							if(Arknights.StageMaker.SelectedPathNode == k) then
+								btn.Alpha = math.Clamp(btn.Alpha + Arknights.GetFixedValue(3), 0, 25)
+							else
+								btn.Alpha = math.Clamp(btn.Alpha + Arknights.GetFixedValue(1), 0, 7)
+							end
+						else
+							btn.Alpha = math.Clamp(btn.Alpha - Arknights.GetFixedValue(3), 0, 25)
+						end
+						draw.RoundedBox(0, 0, 0, btn:GetWide(), btn:GetTall(), Color(255, 255, 255, btn.Alpha))
+					end
+			end
+		end
+		basepnl.Think = function()
+			if(!Arknights.ReloadPathList) then return end
+			basepnl.ReloadList()
+			Arknights.ReloadPathList = false
+		end
+		basepnl.ReloadList()
+	Arknights.AutoResizePanel(ui, basepnl)
+end
+
 local outofrange = function(val)
 	return (val >= 4 && val <= 24)
 end
@@ -478,7 +527,13 @@ Arknights.StageMaker.ToolTabs = {
 	{
 		title = "Node Path",
 		func = function(ui)
-
+			Arknights.StageMaker.CreateDesc(ui, "Paths")
+			Arknights.CreatePathList(ui)
+			Arknights.StageMaker.CreateDesc(ui, "Edit Mode")
+			Arknights.StageMaker.CreateVariableSwitch(ui, "NodeEditMode", {
+				["Create / Remove"] = 0,
+				["Adjust Timer"] = 1,
+			})
 		end,
 	},
 	{
@@ -505,6 +560,12 @@ function Arknights.CreateStageUI()
 	local out = true
 	local panelHovered = false
 	if(Arknights.Stage.Editmode) then
+		Arknights.StageMaker.SelectedMode = 1
+		Arknights.StageMaker.TexturingMode = 1
+		Arknights.StageMaker.SelectedPathNode = nil
+		Arknights.StageMaker.SelectedNode = nil
+		Arknights.StageMaker.NodeEditMode = 0
+
 		local wide = ScrW() * 0.2
 		local origin = ScrW() - wide
 		local currentPos = origin
@@ -583,68 +644,81 @@ function Arknights.CreateStageUI()
 			end
 			v.func(panel.SubPanel)
 		end
-		Arknights.StageMaker.EditorFrame = properties
-	end
 
-	ui.Think = function()
-		local x, y = input.GetCursorPos()
-		if((out && panelHovered) || Arknights.StageMaker.StopClickTime > SysTime()) then
-			x, y = -1, -1
-		end
-		Arknights.Stage.CursorPos.x = x
-		Arknights.Stage.CursorPos.y = y
-		Arknights.Stage.CursorDir = gui.ScreenToVector(x, y)
-		if(Arknights.TakingScreenshot) then
-			ui:SetAlpha(0)
-		else
-			ui:SetAlpha(255)
-		end
-	end
-
-	local w, h = ScrW() * 0.2, ScrH() * 0.065
-	local toolbar = Arknights.CreatePanel(ui, ScrW() * 0.5 - w * 0.5, 0, w, h, Color(30, 30, 30, 255))
-	local tools = {
-		{
-			material = "arknights/torappu/common_icon/icon_new_block.png",
-			id = 1,
-			tip = "Structure Tool",
-		},
-		{
-			material = "arknights/torappu/common_icon/icon_paint.png",
-			id = 2,
-			tip = "Texturing Tool",
-		},
-		{
-			material = "arknights/torappu/common_icon/icon_link.png",
-			id = 3,
-			tip = "Path Node Tool",
-		},
-	}
-	local spacing = ScreenScaleH(2)
-	local height = toolbar:GetTall() - (spacing * 2)
-	local margin = toolbar:GetWide() / #tools
-	local gap = margin * 0.25
-	local nextX = gap
-	for k,v in ipairs(tools) do
-		local button = Arknights.CreateMatButton(toolbar, nextX, spacing, height, height, Arknights.GetCachedMaterial(v.material), function()
-			Arknights.StageMaker.SelectedMode = v.id
-			Arknights.ButtonClickSound("select")
-		end)
-		button.Think = function()
-			if(button:IsHovered() && Arknights.ToolTipOverrideTime < SysTime()) then
-				Arknights.ShowToolTip(v.tip, 0.25)
+		ui.Think = function()
+			local x, y = input.GetCursorPos()
+			if((out && panelHovered) || Arknights.StageMaker.StopClickTime > SysTime()) then
+				x, y = -1, -1
 			end
-		end
-		button.Alpha = 0
-		button.Paint2x = function()
-			if(Arknights.StageMaker.SelectedMode == v.id) then
-				button.Alpha = math.Clamp(button.Alpha + Arknights.GetFixedValue(2), 0, 25)
+			Arknights.Stage.CursorPos.x = x
+			Arknights.Stage.CursorPos.y = y
+			Arknights.Stage.CursorDir = gui.ScreenToVector(x, y)
+			if(Arknights.TakingScreenshot) then
+				ui:SetAlpha(0)
 			else
-				button.Alpha = math.Clamp(button.Alpha - Arknights.GetFixedValue(2), 0, 25)
+				ui:SetAlpha(255)
 			end
-			draw.RoundedBox(spacing, 0, 0, button:GetWide(), button:GetTall(), Color(255, 255, 255, button.Alpha))
 		end
-		nextX = nextX + margin
+
+		ui.Paint = function()
+			if(Arknights.StageMaker.SelectedMode == 3) then
+				if(Arknights.StageMaker.IsCurrentNodeValid()) then
+					Arknights.DrawBGText(ScrW() * 0.5, ScrH() * 0.65, "Press enter to finish current path", "Arknights_StageMaker_PathNode_Timer", Color(255, 255, 255, 255), 255, TEXT_ALIGN_CENTER)
+				end
+			end
+		end
+
+		local w, h = ScrW() * 0.2, ScrH() * 0.065
+		local toolbar = Arknights.CreatePanel(ui, ScrW() * 0.5 - w * 0.5, 0, w, h, Color(30, 30, 30, 255))
+		local tools = {
+			{
+				material = "arknights/torappu/common_icon/icon_new_block.png",
+				id = 1,
+				tip = "Structure Tool",
+			},
+			{
+				material = "arknights/torappu/common_icon/icon_paint.png",
+				id = 2,
+				tip = "Texturing Tool",
+			},
+			{
+				material = "arknights/torappu/common_icon/icon_link.png",
+				id = 3,
+				tip = "Node Path Tool",
+			},
+		}
+		local spacing = ScreenScaleH(2)
+		local height = toolbar:GetTall() - (spacing * 2)
+		local margin = toolbar:GetWide() / #tools
+		local gap = margin * 0.25
+		local nextX = gap
+		for k,v in ipairs(tools) do
+			local button = Arknights.CreateMatButton(toolbar, nextX, spacing, height, height, Arknights.GetCachedMaterial(v.material), function()
+				Arknights.StageMaker.SelectedMode = v.id
+				Arknights.ButtonClickSound("select")
+			end)
+			button.Think = function()
+				if(button:IsHovered() && Arknights.ToolTipOverrideTime < SysTime()) then
+					Arknights.ShowToolTip(v.tip, 0.25)
+				end
+			end
+			button.Alpha = 0
+			button.Paint2x = function()
+				if(Arknights.StageMaker.SelectedMode == v.id) then
+					button.Alpha = math.Clamp(button.Alpha + Arknights.GetFixedValue(2), 0, 25)
+				else
+					button.Alpha = math.Clamp(button.Alpha - Arknights.GetFixedValue(2), 0, 25)
+				end
+				draw.RoundedBox(spacing, 0, 0, button:GetWide(), button:GetTall(), Color(255, 255, 255, button.Alpha))
+			end
+			nextX = nextX + margin
+		end
+
+		function ui:OnKeyCodePressed(key)
+			Arknights.StageMaker.KeyCodePressed(key)
+		end
+
+		Arknights.StageMaker.EditorFrame = properties
 	end
 
 	Arknights.BackButton(ui, function()

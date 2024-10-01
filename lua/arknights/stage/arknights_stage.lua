@@ -73,6 +73,15 @@ function Arknights.DestroyStageMesh(x, y)
 	end
 end
 
+function Arknights.IsSelectedGridWalkable(x, y)
+	local strdata = Arknights.GetHoveredStructure(x, y)
+	if(!strdata) then return false end
+	if(strdata.type == "ground" || strdata.type == "ground2") then
+		return true
+	end
+	return false
+end
+
 function Arknights.RebuildStageMeshes()
 	Arknights.DestroyAllStageMeshes()
 	for index1, data in pairs(Arknights.Stage.Structures) do

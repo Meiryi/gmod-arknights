@@ -177,3 +177,23 @@ surface.CreateFont("Arknights_StageMaker_ToolTip", {
 	scanlines = 0,
 	antialias = true,
 })
+
+surface.CreateFont("Arknights_StageMaker_PathNode_Timer_0.5x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(10),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_StageMaker_PathNode_Timer", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(16),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})

@@ -135,8 +135,16 @@ function Arknights.StageMaker.ClickedFunc(hold)
 		elseif(Arknights.StageMaker.SelectedMode == 2) then
 			Arknights.SetStructureMaterial(x, y)
 		elseif(Arknights.StageMaker.SelectedMode == 3) then
-			if(!Arknights.StagerMaker.IsCurrentNodeValid()) then
-				Arknights.StagerMaker.NewPathNode(x, y)
+			if(hold) then return end
+			if(Arknights.StageMaker.NodeEditMode == 0) then
+				if(!Arknights.StageMaker.IsCurrentNodeValid()) then
+					Arknights.StageMaker.NewPathNode(x, y)
+				else
+					if(!Arknights.IsSelectedGridWalkable(x, y)) then return end
+					Arknights.StageMaker.NewNode(x, y)
+				end
+			else
+				Arknights.StageMaker.ModifyNodeTimer(Arknights.StageMaker.SelectedNode)
 			end
 		end
 	else
@@ -144,6 +152,11 @@ function Arknights.StageMaker.ClickedFunc(hold)
 			Arknights.RemoveStructure(x, y)
 		elseif(Arknights.StageMaker.SelectedMode == 2) then
 
+		elseif(Arknights.StageMaker.SelectedMode == 3) then
+			if(hold) then return end
+			if(Arknights.StageMaker.NodeEditMode == 0) then
+				Arknights.StageMaker.RemoveNode()
+			end
 		end
 	end
 	
@@ -152,6 +165,18 @@ end
 function Arknights.StageMaker.HoldingFunc()
 	if(!Arknights.StageMaker.InEditMode()) then return end
 	Arknights.StageMaker.ClickedFunc(true)
+end
+
+function Arknights.StageMaker.KeyCodePressed(key)
+		if(Arknights.StageMaker.SelectedMode == 1) then
+
+		elseif(Arknights.StageMaker.SelectedMode == 2) then
+
+		elseif(Arknights.StageMaker.SelectedMode == 3) then
+			if(Arknights.StageMaker.IsCurrentNodeValid() && key == KEY_ENTER) then
+				Arknights.StageMaker.SelectedPathNode = nil
+			end
+		end
 end
 
 function Arknights.StageMaker.InEditMode()

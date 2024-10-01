@@ -39,10 +39,6 @@ function Arknights.IsHovered(p1, p2, x, y)
 	return (x >= p1.x && y >= p1.y && x <= p2.x && y <= p2.y)
 end
 
-function Arknights.RenderPathNodes()
-
-end
-
 Arknights.ToolTipText = ""
 Arknights.ToolTipTextAlpha = 0
 Arknights.ToolTipTextTime = 0
@@ -55,7 +51,7 @@ local vector111 = Vector(1, 1, 1)
 local vector001 = Vector(48, 48, 1)
 local vectoroffset = Vector(24, 24, 0)
 local mins, maxs = Vector(0, 0, 0), Vector(48, 48, 0)
-local color1 = Color(255, 255, 255, 100)
+local color1 = Color(255, 255, 255, 50)
 local color2 = Color(255, 255, 255, 10)
 local color_red = Color(255, 100, 100, 255)
 local color_gray = Color(80, 80, 80, 255)
@@ -64,7 +60,60 @@ local normal_side_1 = Vector(1, 0, 0)
 local normal_side_2 = Vector(-1, 0, 0)
 local normal_side_3 = Vector(0, 1, 0)
 local normal_side_4 = Vector(0, -1, 0)
+local spriteoffset = Vector(0, 0, 12)
 local framemat = Material("arknights/meiryi/frame.png")
+local pathmat = Material("arknights/meiryi/arts/node/node_curr_trans.png", "smooth")
+local pathbeammat = Material("arknights/torappu/arts/[uc]common/path_fx/mask_09.png")
+
+function Arknights.RenderPathNodes()
+	if(!Arknights.StageMaker.IsCurrentNodeValid() || Arknights.StageMaker.SelectedMode != 3) then return end
+	local node = Arknights.Stage.Paths[Arknights.StageMaker.SelectedPathNode]
+	local origin = Arknights.Stage.StructureOrigin
+	local size = Arknights.Stage.GridSize
+	local x, y = Arknights.GetSelectedGrid()
+	local nodeset = false
+	
+	for k,v in ipairs(node) do
+		local gridoffset = v.vec
+		local vec = origin + Vector(gridoffset.x * size, gridoffset.y * size, 0) + vectoroffset + spriteoffset
+		if(x == gridoffset.x && y == gridoffset.y) then
+			Arknights.StageMaker.SelectedNode = k
+			nodeset = true
+		end
+		render.SetMaterial(pathmat)
+		render.DrawSprite(vec, 16, 16, color_red)
+		local scpos = (vec - spriteoffset):ToScreen()
+		cam.Start2D()
+			draw.DrawText("#"..k.." ["..v.timer.."s]", "Arknights_StageMaker_PathNode_Timer_0.5x", scpos.x, scpos.y, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+		cam.End2D()
+		local next = node[k + 1]
+		if(!next) then continue end
+		local nextoffset = next.vec
+		local nextvec = origin + Vector(nextoffset.x * size, nextoffset.y * size, 0) + vectoroffset + spriteoffset
+		render.SetMaterial(pathbeammat)
+		render.DrawBeam(vec, nextvec, 3, 0, 1, Color(255, 0, 0, 155))
+	end
+
+	if(!nodeset) then
+		Arknights.StageMaker.SelectedNode = nil
+	end
+	render.SetMaterial(pathmat)
+	local p = origin + Vector(x * size, y * size, 0) + vectoroffset + spriteoffset
+	local canplacenode = Arknights.IsSelectedGridWalkable(x, y)
+	if(Arknights.StageMaker.NodeEditMode == 0) then
+		if(canplacenode) then
+			local lastpoint = node[#node]
+			local lastvec = origin + Vector(lastpoint.vec.x * size, lastpoint.vec.y * size, 0) + vectoroffset + spriteoffset
+			render.DrawSprite(p, 16, 16, color_red)
+			render.SetMaterial(pathbeammat)
+			render.DrawBeam(lastvec, p, 3, 0, 1, Color(255, 0, 0, 155))
+		end
+	else
+
+	end
+
+end
+
 function Arknights.RenderStageEditMode()
 	if(Arknights.TakingScreenshot) then return end
 	--if(!Arknights.Stage.Editmode) then return end
@@ -112,7 +161,7 @@ function Arknights.RenderStageEditMode()
 			end
 		end
 	end
-	
+
 	Arknights.RenderPathNodes()
 
 	cam.IgnoreZ(false)
@@ -330,13 +379,22 @@ hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", funct
 	Arknights.RenderStageEditMode()
 end)
 
+function Arknights.DrawBGText(x, y, text, font, color, alpha, algin_hor, algin_ver)
+	local spacing = AKScreenScaleH(2)
+	local tw, th = Arknights.GetTextSize(font, text)
+	x = x + spacing
+	y = y + spacing
+	local bgx = x
+	if(algin_hor == TEXT_ALIGN_CENTER) then
+		bgx = x - tw * 0.5
+	end
+	draw.RoundedBox(0, bgx, y, tw + spacing * 2, th, Color(0, 0, 0, alpha * 0.75))
+	draw.DrawText(text, font, x + spacing, y, Color(color.r, color.g, color.b, alpha), algin_hor || TEXT_ALIGN_LEFT, algin_ver || TEXT_ALIGN_TOP)
+end
+
 hook.Add("PostRenderVGUI", "Arknights_DrawToolTip", function()
 	cam.Start2D()
-		local spacing = AKScreenScaleH(2)
-		local tw, th = Arknights.GetTextSize("Arknights_StageMaker_ToolTip", Arknights.ToolTipText)
 		local x, y = input.GetCursorPos()
-		x = x + spacing
-		y = y + spacing
 		if(Arknights.ToolTipTextTime > SysTime()) then
 			Arknights.ToolTipTextAlpha = math.Clamp(Arknights.ToolTipTextAlpha + Arknights.GetFixedValue(20), 0, 255)
 		else
@@ -345,8 +403,7 @@ hook.Add("PostRenderVGUI", "Arknights_DrawToolTip", function()
 			end
 		end
 		if(Arknights.ToolTipTextAlpha > 0) then
-			draw.RoundedBox(0, x, y, tw + spacing * 2, th, Color(0, 0, 0, Arknights.ToolTipTextAlpha * 0.5))
-			draw.DrawText(Arknights.ToolTipText, "Arknights_StageMaker_ToolTip", x + spacing, y, Color(255, 255, 255, Arknights.ToolTipTextAlpha), TEXT_ALIGN_LEFT)
+			Arknights.DrawBGText(x, y, Arknights.ToolTipText, "Arknights_StageMaker_ToolTip", Color(255, 255, 255, 255), Arknights.ToolTipTextAlpha)
 		end
 	cam.End2D()
 end)
