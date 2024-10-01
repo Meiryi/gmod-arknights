@@ -41,33 +41,37 @@ Arknights.StageMaker.TileData = {
 	ground = {
 		type = "ground",
 		offset = -Vector(24, 24, 24),
+		meshoffset = Vector(24, 24, 0),
 		gridoffset = Vector(0, 0, 0),
-		material = "default",
-		sidematerial = "default",
+		material = -1,
+		sidematerial = -1,
 		deployable = true,
 	},
 	ground2 = {
 		type = "ground2",
 		offset = -Vector(24, 24, 24),
+		meshoffset = Vector(24, 24, 0),
 		gridoffset = Vector(0, 0, 0),
-		material = "default",
-		sidematerial = "default",
+		material = -1,
+		sidematerial = -1,
 		deployable = false,
 	},
 	ranged = {
 		type = "ranged",
 		offset = -Vector(24, 24, 0),
+		meshoffset = Vector(24, 24, 24),
 		gridoffset = Vector(0, 0, 24),
-		material = "default",
-		sidematerial = "default",
+		material = -1,
+		sidematerial = -1,
 		deployable = true,
 	},
 	wall = {
 		type = "wall",
 		offset = -Vector(24, 24, 0),
+		meshoffset = Vector(24, 24, 24),
 		gridoffset = Vector(0, 0, 24),
-		material = "default",
-		sidematerial = "default",
+		material = -1,
+		sidematerial = -1,
 		deployable = false,
 	},
 }
@@ -84,6 +88,7 @@ end
 function Arknights.RemoveStructure(x, y)
 	if(!Arknights.Stage.Structures[x]) then return end
 	Arknights.Stage.Structures[x][y] = nil
+	Arknights.DestroyStageMesh(x, y)
 	Arknights.SaveLevelData()
 end
 
@@ -108,6 +113,7 @@ function Arknights.SetStructure(x, y, id)
 	end
 	local strdata = data
 	Arknights.Stage.Structures[x][y] = strdata
+	Arknights.CreateStageMesh(x, y)
 	Arknights.SaveLevelData()
 end
 
@@ -115,7 +121,7 @@ end
 --[[
 	Needs to make a function that can create different strcutures based on the data given
 ]]
-function Arknights.StageMaker.ClickedFunc()
+function Arknights.StageMaker.ClickedFunc(hold)
 	if(!Arknights.StageMaker.InEditMode()) then return end
 	if(!input.IsMouseDown(107) && !input.IsMouseDown(108)) then return end
 	local left_or_right = input.IsMouseDown(107) -- True for left, false for right
@@ -128,6 +134,10 @@ function Arknights.StageMaker.ClickedFunc()
 			Arknights.SetStructure(x, y, Arknights.StageMaker.BlockType)
 		elseif(Arknights.StageMaker.SelectedMode == 2) then
 			Arknights.SetStructureMaterial(x, y)
+		elseif(Arknights.StageMaker.SelectedMode == 3) then
+			if(!Arknights.StagerMaker.IsCurrentNodeValid()) then
+				Arknights.StagerMaker.NewPathNode(x, y)
+			end
 		end
 	else
 		if(Arknights.StageMaker.SelectedMode == 1) then
@@ -141,7 +151,7 @@ end
 
 function Arknights.StageMaker.HoldingFunc()
 	if(!Arknights.StageMaker.InEditMode()) then return end
-	Arknights.StageMaker.ClickedFunc()
+	Arknights.StageMaker.ClickedFunc(true)
 end
 
 function Arknights.StageMaker.InEditMode()

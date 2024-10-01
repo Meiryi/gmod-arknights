@@ -703,15 +703,16 @@ function Arknights.PopupTextEntryMenu(data)
 		local inner = Arknights.CreatePanelMat(ui, horizontal_margin, vertical_margin, AKScrW() - (horizontal_margin * 2), AKScrH() - (vertical_margin * 2), Arknights.GetCachedMaterial("arknights/torappu/bg/bg9.png"),Color(50, 50, 50, 255))
 		local text_margin = AKScreenScaleH(8)
 		local text1 = Arknights.CreateLabelBG(inner, text_margin, text_margin, data.t1, "Arknights_Popup_1x", data.tcolor, data.t1color, nil)
-		Arknights.CreateLabelBG(inner, Arknights.GetGUINextPos(text1).x, text_margin, data.t2, "Arknights_Popup_1x", data.tcolor, data.t2color, Arknights.GetCachedMaterial("arknights/torappu/common_icon/icon_input.png"))
+		Arknights.CreateLabelBG(inner, Arknights.GetGUINextPos(text1).x, text_margin, data.t2, "Arknights_Popup_1x", data.tcolor, data.t2color, Arknights.GetCachedMaterial(data.tmat || "arknights/torappu/common_icon/icon_input.png"))
 		local textentry_margin = AKScreenScaleH(32)
 		local textentry_wide, textentry_tall = inner:GetWide() - (textentry_margin * 2), AKScreenScaleH(18)
 		local text_entry = Arknights.CreateTextEntry(inner, textentry_margin, inner:GetTall() * 0.5 - textentry_tall * 0.5, textentry_wide, textentry_tall, data.ptext, "Arknights_TextEntry_PlaceHolder_1x", Color(255, 255, 255, 255), Color(120, 120, 120, 255), Color(80, 80, 80, 255))
-
+		if(data.deftext) then
+			text_entry:SetValue(data.deftext)
+		end
 		local buttonWidth, buttonHeight = inner:GetWide() * 0.5, AKScreenScaleH(28)
 		local cancel_button = Arknights.CreateMatButtonTextIcon(ui, inner:GetX(), inner:GetY() + inner:GetTall(), buttonWidth, buttonHeight, Arknights.GetCachedMaterial("arknights/torappu/button/btn_cancel_bkg.png"), "Cancel", "Arknights_Popup_1x", Color(255, 255, 255, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/btn_icon_cancel.png"), {x = 0, y = -iconoffs}, function()
 			if(ui.Exiting) then return end
-
 			Arknights.ButtonClickSound("select")
 			ui.Exiting = true
 		end)

@@ -19,7 +19,7 @@ function Arknights.GetCachedVMaterial(material)
 			["$translucent"] = 1,
 			["$vertexalpha"] = 1,
 			["$vertexcolor"] = 1,
-			["$noclull"] = 0,
+			--["$noclull"] = 0, -- This will messup meshes
 		})
 		Arknights.MaterialIndex = Arknights.MaterialIndex + 1
 	end

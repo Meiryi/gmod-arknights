@@ -39,9 +39,14 @@ function Arknights.IsHovered(p1, p2, x, y)
 	return (x >= p1.x && y >= p1.y && x <= p2.x && y <= p2.y)
 end
 
+function Arknights.RenderPathNodes()
+
+end
+
 Arknights.ToolTipText = ""
 Arknights.ToolTipTextAlpha = 0
 Arknights.ToolTipTextTime = 0
+Arknights.ToolTipOverrideTime = 0
 
 local angle000 = Angle(0, 0, 0)
 local vector005 = Vector(5, 5, 5)
@@ -107,6 +112,9 @@ function Arknights.RenderStageEditMode()
 			end
 		end
 	end
+	
+	Arknights.RenderPathNodes()
+
 	cam.IgnoreZ(false)
 	Arknights.Stage.IsHoveringStagePlane = (intersection && Arknights.IsHovered(origin, origin + Vector(end1, end2), intersection.x, intersection.y)) || false
 end
@@ -189,6 +197,25 @@ local lastbg = ""
 local offset_1 = Vector(48, 24, -24)
 local offset_2 = Vector(24, 0, -24)
 local offset_3 = Vector(24, 48, -24)
+
+local function renderMesh(x, y, structure)
+	local meshes = nil
+	if(!Arknights.Stage.StructureMeshes[x] || !Arknights.Stage.StructureMeshes[x][y]) then return end
+	meshes = Arknights.Stage.StructureMeshes[x][y]
+	if(structure.material == -1) then
+		render_SetMaterial(defMaterial)
+	else
+		render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
+	end
+	meshes.top:Draw()
+	if(structure.sidematerial == -1) then
+		render_SetMaterial(defMaterial)
+	else
+		render_SetMaterial(Arknights.GetCachedMaterial(structure.sidematerial))
+	end
+	meshes.side:Draw()
+end
+
 function Arknights.RenderStage()
 	if(lastbg != Arknights.Stage.Background) then
 		bgMaterial = Arknights.GetCachedMaterial(Arknights.Stage.Background)
@@ -200,26 +227,27 @@ function Arknights.RenderStage()
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	cam.End2D()
 	Arknights.CalculateScreenPosition()
+	if(!defMaterial) then
+		defMaterial = Arknights.GetCachedVMaterial("hunter/myplastic")
+	end
+	render.SuppressEngineLighting(true)
 	if(Arknights.Settings.RenderMode == 1) then
 		local origin = Arknights.Stage.StructureOrigin
 		local size = Arknights.Stage.GridSize
 		local offset = size * 0.5
 		local height = 512
-		if(!defMaterial) then
-			defMaterial = Arknights.GetCachedVMaterial("hunter/myplastic")
-		end
 		render_SetMaterial(defMaterial)
 		local strdata = Arknights.Stage.Structures
 		for x, data in pairs(strdata) do
 			for y, structure in pairs(data) do
 				local p1 = origin + Vector(x * size, y * size, 0) + structure.gridoffset
-				if(structure.material == "default") then
+				if(structure.material == -1) then
 					render_SetMaterial(defMaterial)
 				else
 					render_SetMaterial(Arknights.GetCachedMaterial(structure.material))
 				end
 				render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
-				if(structure.sidematerial == "default") then
+				if(structure.sidematerial == -1) then
 					render_SetMaterial(defMaterial)
 				else
 					render_SetMaterial(Arknights.GetCachedMaterial(structure.sidematerial))
@@ -251,8 +279,30 @@ function Arknights.RenderStage()
 		end
 		render.SetColorMaterial()
 	elseif(Arknights.Settings.RenderMode == 2) then
-		
+		-- Render from edge to center to prevent render order issue
+		local origin = Arknights.Stage.StructureOrigin
+
+		render.SetAmbientLight(1, 1, 1)
+		render.SetModelLighting(BOX_FRONT, 0.8, 0.8, 0.8)
+		render.SetModelLighting(BOX_LEFT, 0.5, 0.5, 0.5)
+		render.SetModelLighting(BOX_RIGHT, 0.5, 0.5, 0.5)
+		render.SetModelLighting(BOX_TOP, 0.6, 0.6, 0.6)
+
+		local max = Arknights.Stage.Size.h
+		local half = math.floor(max / 2)
+		for x, data in pairs(Arknights.Stage.Structures) do
+			for y = max, half, -1 do
+				if(y <= half) then break end
+				local structure = data[y]
+				renderMesh(x, y, structure)
+			end
+			for y = 0, half do
+				local structure = data[y]
+				renderMesh(x, y, structure)
+			end
+		end
 	end
+	render.SuppressEngineLighting(false)
 end
 
 function Arknights.RenderArknightsEntities()
@@ -271,8 +321,10 @@ hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", funct
 	local gameactive = Arknights.IsGameActive()
 	Arknights_DrawHUD = !gameactive
 	if(!gameactive || Arknights.IsGameFrameVisible()) then return end
-	render.Clear(0, 0, 0, 0, true, true)
-	render.ClearStencil()
+	--[[
+		render.Clear(0, 0, 0, 0, true, true)
+		render.ClearStencil()
+	]]
 	Arknights.RenderStage()
 	Arknights.RenderArknightsEntities()
 	Arknights.RenderStageEditMode()

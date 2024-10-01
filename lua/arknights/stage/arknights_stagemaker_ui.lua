@@ -165,14 +165,8 @@ end
 
 Arknights.StageMaker.CachedMaterialPaths = Arknights.StageMaker.CachedMaterialPaths || {}
 local paths = {
-	"",
-	"wood",
-	"tile",
-	"plaster",
-	"metal",
-	"concrete",
-	"bulding_template",
-	"brick",
+	"arknights/meiryi/level/chernobog",
+	"arknights/meiryi/level/lungmen",
 }
 function Arknights.StageMaker.GetMaterials()
 	if(#Arknights.StageMaker.CachedMaterialPaths > 0) then
@@ -407,8 +401,9 @@ Arknights.StageMaker.ToolTabs = {
 				passfunc = function(text)
 					local val = tonumber(text)
 					Arknights.Stage.Size.h = val
-					Arknights.NextFrameFunc(Arknights.ReCalculateAllStructurePosition)
 					Arknights.RemoveOutOfBoundsStructure()
+					Arknights.DestroyAllStageMeshes()
+
 					Arknights.SaveLevelData()
 				end,
 			})
@@ -429,8 +424,9 @@ Arknights.StageMaker.ToolTabs = {
 				passfunc = function(text)
 					local val = tonumber(text)
 					Arknights.Stage.Size.w = val
-					Arknights.NextFrameFunc(Arknights.ReCalculateAllStructurePosition)
 					Arknights.RemoveOutOfBoundsStructure()
+					Arknights.DestroyAllStageMeshes()
+					
 					Arknights.SaveLevelData()
 				end,
 			})
@@ -480,7 +476,7 @@ Arknights.StageMaker.ToolTabs = {
 		end,
 	},
 	{
-		title = "Path Node",
+		title = "Node Path",
 		func = function(ui)
 
 		end,
@@ -635,7 +631,7 @@ function Arknights.CreateStageUI()
 			Arknights.ButtonClickSound("select")
 		end)
 		button.Think = function()
-			if(button:IsHovered()) then
+			if(button:IsHovered() && Arknights.ToolTipOverrideTime < SysTime()) then
 				Arknights.ShowToolTip(v.tip, 0.25)
 			end
 		end
@@ -658,6 +654,7 @@ function Arknights.CreateStageUI()
 		local func = function()
 			Arknights.FadeTransition(function()
 				Arknights.ToggleGameFrame(true)
+				Arknights.DestroyAllStageMeshes()
 				Arknights.IdealMusic = "void"
 				ui:Remove()
 			end)

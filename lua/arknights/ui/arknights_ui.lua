@@ -1,7 +1,7 @@
 Arknights.GameActive = Arknights.GameActive || false
 Arknights.GameFrame = Arknights.GameFrame || nil
 
-local skip = false
+local skip = true
 local reload = true
 function Arknights.Launch()
 	if(IsValid(Arknights.GameFrame)) then
