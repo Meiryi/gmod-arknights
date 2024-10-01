@@ -108,10 +108,7 @@ function Arknights.RenderPathNodes()
 			render.SetMaterial(pathbeammat)
 			render.DrawBeam(lastvec, p, 3, 0, 1, Color(255, 0, 0, 155))
 		end
-	else
-
 	end
-
 end
 
 function Arknights.RenderStageEditMode()
@@ -145,7 +142,9 @@ function Arknights.RenderStageEditMode()
 			end
 			if(strdata) then
 				if(deployable) then
-					render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
+					if(Arknights.Settings.DisplayGrids) then
+						render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_white)
+					end
 				else
 					render_DrawQuadEasy(p1 + vectoroffset, normal_up, size, size, color_red)
 				end
@@ -337,9 +336,15 @@ function Arknights.RenderStage()
 		render.SetModelLighting(BOX_RIGHT, 0.5, 0.5, 0.5)
 		render.SetModelLighting(BOX_TOP, 0.6, 0.6, 0.6)
 
+		render.OverrideDepthEnable(true, true)
+
 		local max = Arknights.Stage.Size.h
 		local half = math.floor(max / 2)
 		for x, data in pairs(Arknights.Stage.Structures) do
+			for y, structure in pairs(data) do
+				renderMesh(x, y, structure)
+			end
+			--[[
 			for y = max, half, -1 do
 				if(y <= half) then break end
 				local structure = data[y]
@@ -349,7 +354,9 @@ function Arknights.RenderStage()
 				local structure = data[y]
 				renderMesh(x, y, structure)
 			end
+			]]
 		end
+		render.OverrideDepthEnable(false, false)
 	end
 	render.SuppressEngineLighting(false)
 end
