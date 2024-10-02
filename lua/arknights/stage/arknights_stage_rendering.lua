@@ -28,10 +28,11 @@ end)
 
 Arknights_DisableHUD = Arknights_DisableHUD || false
 Arknights.Stage.ManualPaintEnities = Arknights.Stage.ManualPaintEnities || {}
-function Arknights.AddManualPainting(ent, isEffect)
+function Arknights.AddManualPainting(ent, isEffect, drawModel)
 	table.insert(Arknights.Stage.ManualPaintEnities, {
 		ent = ent,
 		isEffect = isEffect,
+		drawModel = drawModel,
 	})
 end
 
@@ -101,7 +102,7 @@ function Arknights.RenderPathNodes()
 	local p = origin + Vector(x * size, y * size, 0) + vectoroffset + spriteoffset
 	local canplacenode = Arknights.IsSelectedGridWalkable(x, y)
 	if(Arknights.StageMaker.NodeEditMode == 0) then
-		if(canplacenode) then
+		if(canplacenode && Arknights.Stage.IsHoveringStagePlane) then
 			local lastpoint = node[#node]
 			local lastvec = origin + Vector(lastpoint.vec.x * size, lastpoint.vec.y * size, 0) + vectoroffset + spriteoffset
 			render.DrawSprite(p, 16, 16, color_red)
@@ -174,7 +175,7 @@ end
 local nextcalc = 0
 local finalvec = Vector(0, 0, 0)
 local lastW, lastH = 0, 0
-function Arknights.CalculateScreenPosition()
+function Arknights.CalculateScreenPosition(force)
 	local origin = Arknights.Stage.ViewPointOrigin + Vector(0, 0, 256)
 	local gridSize = Arknights.Stage.GridSize
 	local gridWide, gridTall = Vector(Arknights.Stage.Size.w * gridSize, 0, 0), Vector(0, Arknights.Stage.Size.h * gridSize, 0)
@@ -182,7 +183,7 @@ function Arknights.CalculateScreenPosition()
 	local _ok = false
 	local forward = 1
 	render.SetColorMaterial()
-	if(!(lastW == gridWide && lastH == gridTall)) then
+	if(!(lastW == gridWide && lastH == gridTall) || force) then
 		local calcTime = SysTime() + 1
 		local forwarded = 0
 		while(calcTime > SysTime() && !_ok) do
@@ -368,7 +369,19 @@ function Arknights.RenderArknightsEntities()
 			Arknights.Stage.ManualPaintEnities[k] = nil
 			continue
 		end
-		v.ent:Draw(true, true, true)
+		if(v.isEffect) then
+			v.ent:Draw(true, true, true)
+		end
+		if(v.drawModel) then
+			local clr = v.ent:GetColor()
+			render.SetColorModulation(clr.r / 255, clr.g / 255, clr.b / 255)
+			render.SetBlend(clr.a / 255)
+			v.ent:DrawModel()
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(1)
+		else
+			v.ent:Draw(true, true, true)
+		end
 	end
 	render.SuppressEngineLighting(false)
 end

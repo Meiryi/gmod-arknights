@@ -21,7 +21,19 @@ Arknights.Stage.Enemies = Arknights.Stage.Enemies || {}
 Arknights.Stage.Spawns = Arknights.Stage.Spawns || {}
 Arknights.Stage.Paths = Arknights.Stage.Paths || {}
 Arknights.Stage.Structures = Arknights.Stage.Structures || {}
-Arknights.Stage.Structures_Details = Arknights.Stage.Structures_Details || {}
+Arknights.Stage.Structures_Entities = Arknights.Stage.Structures_Entities || {}
+
+Arknights.Stage.SpawnModelList = {
+	homebase = "models/arknights/meiryi/base_box.mdl",
+	enemybase_ground = "models/arknights/meiryi/base_box.mdl",
+	enemybase_air = "models/arknights/meiryi/base_fly.mdl",
+}
+
+Arknights.Stage.SpawnColorList = {
+	homebase = Color(0, 180, 255, 220),
+	enemybase_ground = Color(255, 0, 0, 220),
+	enemybase_air = Color(255, 0, 0, 220),
+}
 
 Arknights.Stage.AmbientLight = Arknights.Stage.AmbientLight || Color(0.7843, 0.9019, 1)
 
@@ -124,6 +136,18 @@ function Arknights.RemoveOutOfBoundsStructure()
 			if(k <= maxX && x <= maxY) then continue end
 			if(Arknights.Stage.Structures[k]) then
 				Arknights.Stage.Structures[k][x] = nil
+			end
+		end
+	end
+	for k,v in pairs(Arknights.Stage.Structures_Entities) do
+		for x,y in pairs(v) do
+			if(k <= maxX && x <= maxY) then continue end
+			if(Arknights.Stage.Structures_Entities[k]) then
+				if(IsValid(y)) then
+					y:Remove()
+				end
+				Arknights.Stage.Spawns[k][x] = nil
+				Arknights.Stage.Structures_Entities[k][x] = nil
 			end
 		end
 	end

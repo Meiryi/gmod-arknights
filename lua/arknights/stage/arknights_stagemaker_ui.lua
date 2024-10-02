@@ -450,9 +450,10 @@ Arknights.StageMaker.ToolTabs = {
 				passfunc = function(text)
 					local val = tonumber(text)
 					Arknights.Stage.Size.h = val
+					Arknights.CalculateScreenPosition(true)
 					Arknights.RemoveOutOfBoundsStructure()
-					Arknights.DestroyAllStageMeshes()
-
+					Arknights.RebuildStageMeshes()
+					Arknights.RebuildSpawnModelEntities()
 					Arknights.SaveLevelData()
 				end,
 			})
@@ -473,9 +474,10 @@ Arknights.StageMaker.ToolTabs = {
 				passfunc = function(text)
 					local val = tonumber(text)
 					Arknights.Stage.Size.w = val
+					Arknights.CalculateScreenPosition(true)
 					Arknights.RemoveOutOfBoundsStructure()
-					Arknights.DestroyAllStageMeshes()
-					
+					Arknights.RebuildStageMeshes()
+					Arknights.RebuildSpawnModelEntities()
 					Arknights.SaveLevelData()
 				end,
 			})
@@ -497,6 +499,9 @@ Arknights.StageMaker.ToolTabs = {
 				["Ground Tile (Undeplayable)"] = "ground2",
 				["High Ground Tile"] = "ranged",
 				["Ground Tile"] = "ground",
+				["Home Base"] = "homebase",
+				["Enemy Base"] = "enemybase_ground",
+				["Enemy Base (Air)"] = "enemybase_air",
 			})
 		end,
 	},
@@ -513,12 +518,6 @@ Arknights.StageMaker.ToolTabs = {
 		end,
 	},
 	{
-		title = "Spawns",
-		func = function(ui)
-
-		end,
-	},
-	{
 		title = "Enemies",
 		func = function(ui)
 
@@ -527,13 +526,13 @@ Arknights.StageMaker.ToolTabs = {
 	{
 		title = "Node Path",
 		func = function(ui)
-			Arknights.StageMaker.CreateDesc(ui, "Paths")
-			Arknights.CreatePathList(ui)
 			Arknights.StageMaker.CreateDesc(ui, "Edit Mode")
 			Arknights.StageMaker.CreateVariableSwitch(ui, "NodeEditMode", {
 				["Create / Remove"] = 0,
 				["Adjust Timer"] = 1,
 			})
+			Arknights.StageMaker.CreateDesc(ui, "Paths")
+			Arknights.CreatePathList(ui)
 		end,
 	},
 	{
@@ -729,6 +728,7 @@ function Arknights.CreateStageUI()
 			Arknights.FadeTransition(function()
 				Arknights.ToggleGameFrame(true)
 				Arknights.DestroyAllStageMeshes()
+				Arknights.RemoveAllSpawnModelEntities()
 				Arknights.IdealMusic = "void"
 				ui:Remove()
 			end)

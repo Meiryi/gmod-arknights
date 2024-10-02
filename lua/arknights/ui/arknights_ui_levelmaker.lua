@@ -30,6 +30,7 @@ function Arknights.LevelMakerUI()
 		scroll.Levels = levels
 		scroll:Clear()
 
+		local margin = AKScreenScaleH(6)
 		for k,v in ipairs(levels) do
 			local ctx = file.Read("arknights/locallevels/"..v, "DATA")
 			if(!ctx) then continue end
@@ -37,7 +38,9 @@ function Arknights.LevelMakerUI()
 			if(!decompressed) then continue end
 			local levelData = util.JSONToTable(decompressed)
 			if(!levelData) then continue end
-			
+			local panel = Arknights.CreatePanel(scroll, 0, 0, scroll:GetWide(), AKScreenScaleH(64), Color(30, 30, 30, 255))
+				panel:Dock(TOP)
+				panel:DockMargin(0, 0, 0, margin)
 		end
 	end
 	scroll.ReloadLevels()

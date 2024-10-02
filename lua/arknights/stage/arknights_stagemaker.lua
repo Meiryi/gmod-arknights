@@ -75,6 +75,16 @@ Arknights.StageMaker.TileData = {
 		deployable = false,
 	},
 }
+
+local spawns = {
+	homebase = true,
+	enemybase_ground = true,
+	enemybase_air = true,
+}
+function Arknights.IsSpawn(id)
+	return spawns[id]
+end
+
 function Arknights.GetStructureData(id)
 	local data = table.Copy(Arknights.StageMaker.TileData[id])
 	return data
@@ -102,9 +112,66 @@ function Arknights.SetStructureMaterial(x, y)
 	end
 end
 
+function Arknights.CreateSpawnModelEntity(x, y, id)
+	Arknights.Stage.Structures_Entities[x] = Arknights.Stage.Structures_Entities[x] || {}
+	if(Arknights.Stage.Structures_Entities[x][y] && IsValid(Arknights.Stage.Structures_Entities[x][y])) then -- Remove old entity
+		Arknights.Stage.Structures_Entities[x][y]:Remove()
+	end
+	local model, color = Arknights.Stage.SpawnModelList[id], Arknights.Stage.SpawnColorList[id]
+	Arknights.Stage.Structures_Entities[x][y] = ClientsideModel(model)
+	Arknights.Stage.Structures_Entities[x][y]:SetPos(Arknights.Stage.StructureOrigin + Vector(x * Arknights.Stage.GridSize, y * Arknights.Stage.GridSize, 0) + Vector(24, 24, 24))
+	Arknights.Stage.Structures_Entities[x][y]:Spawn()
+	Arknights.Stage.Structures_Entities[x][y]:SetColor(color)
+	Arknights.Stage.Structures_Entities[x][y]:SetRenderMode(RENDERMODE_TRANSALPHA)
+	Arknights.AddManualPainting(Arknights.Stage.Structures_Entities[x][y], false, true)
+end
+
+function Arknights.RemoveSpawnModelEntity(x, y)
+	if(!Arknights.Stage.Structures_Entities[x] || !Arknights.Stage.Structures_Entities[x][y] || !IsValid(Arknights.Stage.Structures_Entities[x][y])) then return end
+	Arknights.Stage.Structures_Entities[x][y]:Remove()
+	Arknights.Stage.Structures_Entities[x][y] = nil
+	Arknights.SaveLevelData()
+end
+
+function Arknights.RemoveAllSpawnModelEntities()
+	for x, data in pairs(Arknights.Stage.Structures_Entities) do
+		for y, entity in pairs(data) do
+			if(IsValid(entity)) then
+				entity:Remove()
+			end
+			Arknights.Stage.Structures_Entities[x][y] = nil
+		end
+	end
+end
+
+function Arknights.RebuildSpawnModelEntities()
+	Arknights.RemoveAllSpawnModelEntities()
+	for x, data in pairs(Arknights.Stage.Spawns) do
+		for y, spawn in pairs(data) do
+			Arknights.CreateSpawnModelEntity(x, y, spawn.id)
+		end
+	end
+end
+
+
+function Arknights.SetSpawn(x, y, id)
+	if(!Arknights.Stage.Spawns[x]) then
+		Arknights.Stage.Spawns[x] = {}
+	end
+	Arknights.Stage.Spawns[x][y] = {
+		id = id,
+	}
+	Arknights.CreateSpawnModelEntity(x, y, id)
+	Arknights.SaveLevelData()
+end
+
 function Arknights.SetStructure(x, y, id)
 	if(!Arknights.Stage.Structures[x]) then
 		Arknights.Stage.Structures[x] = {}
+	end
+	if(Arknights.IsSpawn(id)) then
+		Arknights.SetSpawn(x, y, id)
+		return
 	end
 	local prevData = Arknights.GetHoveredStructure(x, y)
 	local data = Arknights.GetStructureData(id)
@@ -149,7 +216,11 @@ function Arknights.StageMaker.ClickedFunc(hold)
 		end
 	else
 		if(Arknights.StageMaker.SelectedMode == 1) then
-			Arknights.RemoveStructure(x, y)
+			if(Arknights.IsSpawn(Arknights.StageMaker.BlockType)) then
+				Arknights.RemoveSpawnModelEntity(x, y)
+			else
+				Arknights.RemoveStructure(x, y)
+			end
 		elseif(Arknights.StageMaker.SelectedMode == 2) then
 
 		elseif(Arknights.StageMaker.SelectedMode == 3) then
