@@ -17,10 +17,10 @@ hook.Add("PostRender", "Arknights_Screenshot", function()
 	local img = render.Capture({
 		format = "jpeg",
 		x = 0,
-		y = 0,
+		y = AKHOFFS,
 		quality = 85,
-		w = ScrW(),
-		h = ScrH(),
+		w = AKScrW(),
+		h = AKScrH(),
         alpha = false
 	})
 	Arknights.Thumbnails[Arknights.Stage.MapID] = img

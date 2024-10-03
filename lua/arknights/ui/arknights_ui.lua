@@ -15,6 +15,7 @@ function Arknights.Launch()
 		Arknights.DirectToHome()
 		return
 	end
+	Arknights.ReadNames()
 	local basepanel = Arknights.CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0))
 	basepanel:MakePopup()
 	local ui = Arknights.CreateFrame(basepanel, 0, math.max(0, (ScrH() - AKScrH()) * 0.5), AKScrW(), AKScrH(), Color(0, 0, 0, 0))

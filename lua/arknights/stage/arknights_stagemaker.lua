@@ -110,6 +110,7 @@ function Arknights.SetStructureMaterial(x, y)
 	else
 		Arknights.Stage.Structures[x][y].sidematerial = Arknights.StageMaker.CurrentMaterial
 	end
+	Arknights.SaveLevelData()
 end
 
 function Arknights.CreateSpawnModelEntity(x, y, id)
@@ -130,6 +131,7 @@ function Arknights.RemoveSpawnModelEntity(x, y)
 	if(!Arknights.Stage.Structures_Entities[x] || !Arknights.Stage.Structures_Entities[x][y] || !IsValid(Arknights.Stage.Structures_Entities[x][y])) then return end
 	Arknights.Stage.Structures_Entities[x][y]:Remove()
 	Arknights.Stage.Structures_Entities[x][y] = nil
+	Arknights.Stage.Spawns[x][y] = nil
 	Arknights.SaveLevelData()
 end
 

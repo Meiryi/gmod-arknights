@@ -197,3 +197,53 @@ surface.CreateFont("Arknights_StageMaker_PathNode_Timer", {
 	scanlines = 0,
 	antialias = true,
 })
+
+surface.CreateFont("Arknights_StageList_0.45x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(10),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_StageList_0.5x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(12),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_StageList_1x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(16),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_StageList_1.5x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(24),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_ConfirmText", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(18),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})

@@ -4,9 +4,12 @@ Arknights.Stage.ViewPointOrigin = Vector(0, 0, -20480)
 Arknights.Stage.ViewPointAngle = Angle(55, 180, 0)
 Arknights.Stage.ViewPointFOV = 60
 Arknights.Stage.StructureOrigin = Vector(0, 0, -20680)
+Arknights.Stage.LookAt = nil
 
 Arknights.Stage.GridSize = 48
 Arknights.Stage.StructureID = 0
+Arknights.Stage.CurrentTime = 0
+Arknights.Stage.MaxTime = 0
 
 Arknights.Stage.Music = Arknights.Stage.Music || "indust"
 Arknights.Stage.MapID = Arknights.Stage.MapID || "NULL"
@@ -157,11 +160,15 @@ function Arknights.StartStage(stageData, editmode)
 	if(!stageData || !istable(stageData)) then return end
 	Arknights.Stage.Editmode = editmode
 	Arknights.ToggleGameFrame(false)
+	Arknights.Stage.LookAt = nil
+	Arknights.Stage.CurrentTime = 0
+	Arknights.Stage.MaxTime = 0
 	for k,v in pairs(stageData) do
 		Arknights.Stage[k] = v
 	end
 	Arknights.CalculateScreenPosition()
 	Arknights.RebuildStageMeshes()
+	Arknights.RebuildSpawnModelEntities()
 	Arknights.CreateStageUI()
 end
 

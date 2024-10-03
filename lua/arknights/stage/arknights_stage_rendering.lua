@@ -40,6 +40,13 @@ function Arknights.IsHovered(p1, p2, x, y)
 	return (x >= p1.x && y >= p1.y && x <= p2.x && y <= p2.y)
 end
 
+function Arknights.SetLookAt(x, y)
+	if(!x && !y) then
+		Arknights.Stage.LookAt = nil
+	end
+	Arknights.Stage.LookAt = Vector(x, y, 0)
+end
+
 Arknights.ToolTipText = ""
 Arknights.ToolTipTextAlpha = 0
 Arknights.ToolTipTextTime = 0
@@ -127,7 +134,7 @@ function Arknights.RenderStageEditMode()
 		_x = math.floor((intersection.x - origin.x) / size)
 		_y = math.floor((intersection.y - origin.y) / size)
 	end
-	cam.IgnoreZ(true)
+
 	render.SetMaterial(framemat)
 	for x = 0, max_x do
 		for y = 0, max_y do
@@ -154,7 +161,9 @@ function Arknights.RenderStageEditMode()
 			end
 			if(isHovered) then
 				render.SetColorMaterial()
+				cam.IgnoreZ(true)
 				render_DrawBox(p1, angle000, vector000, vector001, color1)
+				cam.IgnoreZ(false)
 				Arknights.SetSelectedGrid(x, y)
 				posSet = true
 				render.SetMaterial(framemat)
@@ -163,8 +172,6 @@ function Arknights.RenderStageEditMode()
 	end
 
 	Arknights.RenderPathNodes()
-
-	cam.IgnoreZ(false)
 	Arknights.Stage.IsHoveringStagePlane = (intersection && Arknights.IsHovered(origin, origin + Vector(end1, end2), intersection.x, intersection.y)) || false
 end
 
@@ -397,6 +404,12 @@ hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", funct
 	Arknights.RenderStage()
 	Arknights.RenderArknightsEntities()
 	Arknights.RenderStageEditMode()
+
+	cam.Start2D()
+		draw.RoundedBox(0, 0, 0, AKScrW(), AKHOFFS, Color(0, 0, 0, 255))
+		draw.RoundedBox(0, 0, ScrH() - AKHOFFS, AKScrW(), AKHOFFS, Color(0, 0, 0, 255))
+	cam.End2D()
+	DrawBloom(0.8, 2, 9, 9, 1, 1, 1, 1, 1)
 end)
 
 function Arknights.DrawBGText(x, y, text, font, color, alpha, algin_hor, algin_ver)
