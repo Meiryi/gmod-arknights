@@ -4,7 +4,7 @@ ENT.Type = "anim"
 ENT.WantsTranslucency = true
 
 ENT.BaseFolder = "enemies"
-ENT.EntityID = "enemy_1003_ncbow"
+ENT.EntityID = "enemy_1037_lunsabr"
 ENT.IsMoving = false
 
 ENT.AnimationFPS = 1 / 30
@@ -43,7 +43,7 @@ ENT.maxHp = 1650 -- HP
 ENT.magicResistance = 0 -- RES
 ENT.def = 100 -- DEF
 ENT.epResistance = 0 -- ER?
-ENT.rangeRadius = 1 -- Attack Range
+ENT.rangeRadius = 0 -- Attack Range
 
 ENT.tauntLevel = 0
 ENT.cost = 0
@@ -87,7 +87,7 @@ ENT.AnimTable = {
 	die = "die",
 
 	move_pre = nil,
-	move = "move_loop",
+	move = "run_loop",
 	move_end = nil,
 }
 
@@ -382,6 +382,7 @@ if(CLIENT) then
 					end
 				end
 			end
+			self.NextAttackTime = 0
 		end
 		::move::
 		if(self.TargetDestination && self.StayTime < Arknights.CurTime && !self:IsAttackingAnimation()) then
