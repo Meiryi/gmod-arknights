@@ -3,6 +3,31 @@ Arknights.CachedSpineAnimation = Arknights.CachedSpineAnimation || {}
 
 function Arknights.ClearCaches()
 	Arknights.CachedMaterial = {}
+	Arknights.CachedSpineAnimation = {}
+end
+
+function Arknights.CacheSpineAnimations(basefolder, entityid)
+	if(Arknights.CachedSpineAnimation[entityid]) then
+		return Arknights.CachedSpineAnimation[entityid]
+	end
+	local animations = {}
+	local _, sides = file.Find("materials/arknights/assets/"..basefolder.."/"..entityid.."/*", "GAME")
+	if(#sides <= 0) then -- Invalid path or entity id
+		return nil
+	end
+	for _, side in pairs(sides) do
+		animations[side] = {}
+		local _, anims = file.Find("materials/arknights/assets/"..basefolder.."/"..entityid.."/"..side.."/*", "GAME")
+		for _, anim in pairs(anims) do
+			animations[side][anim] = {}
+			local animation_frames = file.Find("materials/arknights/assets/"..basefolder.."/"..entityid.."/"..side.."/"..anim.."/*.png", "GAME")
+			for _, frame in pairs(animation_frames) do
+				local material = Material("arknights/assets/"..basefolder.."/"..entityid.."/"..side.."/"..anim.."/"..frame, "smooth")
+				table.insert(animations[side][anim], material)
+			end
+		end
+	end
+	Arknights.CachedSpineAnimation[entityid] = animations
 end
 
 function Arknights.RefreshMaterialCaches()

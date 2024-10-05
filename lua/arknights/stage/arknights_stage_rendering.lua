@@ -396,6 +396,7 @@ end
 hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", function()
 	local gameactive = Arknights.IsGameActive()
 	Arknights_DrawHUD = !gameactive
+	Arknights.RenderArknightsEntities()
 	if(!gameactive || Arknights.IsGameFrameVisible()) then return end
 	--[[
 		render.Clear(0, 0, 0, 0, true, true)

@@ -10,6 +10,7 @@ Arknights.Stage.GridSize = 48
 Arknights.Stage.StructureID = 0
 Arknights.Stage.CurrentTime = 0
 Arknights.Stage.MaxTime = 0
+Arknights.Stage.StartTimer = false
 
 Arknights.Stage.Music = Arknights.Stage.Music || "indust"
 Arknights.Stage.MapID = Arknights.Stage.MapID || "NULL"
@@ -43,6 +44,15 @@ Arknights.Stage.AmbientLight = Arknights.Stage.AmbientLight || Color(0.7843, 0.9
 Arknights.Stage.StructuresEntList = Arknights.Stage.StructuresEntList || {}
 Arknights.Stage.StructureMeshes = Arknights.Stage.StructureMeshes || {}
 Arknights.Stage.IsHoveringStagePlane = false
+
+function Arknights.CreateDebugEnemy()
+	if(IsValid(AKTE)) then
+		AKTE:Remove()
+		return
+	end
+	AKTE = ents.CreateClientside("arknights_enemy_base")
+	AKTE:Spawn()
+end
 
 function Arknights.CreateDebugOperator()
 	if(IsValid(AKT)) then
@@ -163,6 +173,7 @@ function Arknights.StartStage(stageData, editmode)
 	Arknights.Stage.LookAt = nil
 	Arknights.Stage.CurrentTime = 0
 	Arknights.Stage.MaxTime = 0
+	Arknights.Stage.StartTimer = !editmode
 	for k,v in pairs(stageData) do
 		Arknights.Stage[k] = v
 	end

@@ -741,6 +741,17 @@ function Arknights.CreateStageUI()
 			Arknights.StageMaker.KeyCodePressed(key)
 		end
 
+		local h = AKScreenScaleH(48)
+		local timingbar = Arknights.CreatePanel(ui, 0, AKScrH() - h, AKScrW(), h, Color(30, 30, 30, 255))
+		timingbar:SetZPos(-1)
+		local margin = AKScreenScaleH(4)
+		local renderwide = timingbar:GetWide() - (margin * 2)
+		timingbar.oPaint = timingbar.Paint
+		timingbar.Paint = function()
+			timingbar.oPaint()
+			
+		end
+
 		Arknights.StageMaker.EditorFrame = properties
 	end
 

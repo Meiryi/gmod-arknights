@@ -247,3 +247,21 @@ surface.CreateFont("Arknights_ConfirmText", {
 	scanlines = 0,
 	antialias = true,
 })
+
+surface.CreateFont("Arknights_OperatorDebugFont", {
+	font = "Arial",
+	extended = false,
+	size = 16,
+	weight = 100,
+	blursize = 0,
+	scanlines = 0,
+})
+
+surface.CreateFont("Arknights_OperatorDebugFont_Small", {
+	font = "Arial",
+	extended = false,
+	size = 10,
+	weight = 100,
+	blursize = 0,
+	scanlines = 0,
+})
