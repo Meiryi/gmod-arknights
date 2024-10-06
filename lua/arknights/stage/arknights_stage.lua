@@ -45,12 +45,12 @@ Arknights.Stage.StructuresEntList = Arknights.Stage.StructuresEntList || {}
 Arknights.Stage.StructureMeshes = Arknights.Stage.StructureMeshes || {}
 Arknights.Stage.IsHoveringStagePlane = false
 
-function Arknights.CreateDebugEnemy()
+function Arknights.CreateDebugEnemy(class)
 	if(IsValid(AKTE)) then
 		AKTE:Remove()
 		return
 	end
-	AKTE = ents.CreateClientside("arknights_enemy_base")
+	AKTE = ents.CreateClientside(class || "arknights_enemy_base")
 	AKTE:Spawn()
 end
 

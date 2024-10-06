@@ -4,7 +4,7 @@ ENT.Type = "anim"
 ENT.WantsTranslucency = true
 
 ENT.BaseFolder = "enemies"
-ENT.EntityID = "enemy_1037_lunsabr"
+ENT.EntityID = "enemy_1038_lunmag_2"
 ENT.IsMoving = false
 
 ENT.AnimationFPS = 1 / 30
@@ -76,23 +76,33 @@ ENT.NextAttackTime = 0
 ENT.AnimationLength = 1
 ENT.ArrivedDestination = false
 
-ENT.AnimTable = {
-	attack_pre = nil,
-	attack_loop = "attack",
-	attack_end = nil,
+ENT.Dead = false
+ENT.DeadTime = 0
+ENT.StartFadingout = false
+ENT.ColorFadingout = false
+ENT.ColorVal = 255
+ENT.Alpha = 255
 
-	comat = nil,
+ENT.AnimTable = {
+	attack_pre = "",
+	attack_loop = "attack",
+	attack_end = "",
+
+	combat = "",
 
 	idle = "idle",
 	die = "die",
 
-	move_pre = nil,
-	move = "run_loop",
-	move_end = nil,
+	move_pre = "",
+	move = "move",
+	move_end = "",
 }
 
 ENT.AttackTimings = {
-
+	{
+		timing = 0.5,
+		attacked = false,
+	}
 }
 
 ENT.DebugInfo = true
@@ -105,6 +115,14 @@ if(CLIENT) then
 
 	function ENT:GetAnimationLength(anim)
 		return #self.Animations["front"][self.AnimTable[anim]] * self.AnimationFPS
+	end
+
+	function ENT:DecideSide(vec)
+		if(vec.y > self:GetPos().y) then
+			self.IdealSide = 1
+		else
+			self.IdealSide = 0
+		end
 	end
 
 	ENT.lastanim = nil
@@ -124,11 +142,20 @@ if(CLIENT) then
 		if(frame == frames) then
 			self.AnimationFinished = true
 		end
-		if(!self.AnimationTime) then
-			self.AnimationTime = Arknights.CurTime + animtime
-		else
-			if(self.AnimationTime < Arknights.CurTime) then
+		if(!self.Dead) then
+			if(!self.AnimationTime) then
 				self.AnimationTime = Arknights.CurTime + animtime
+			else
+				if(self.AnimationTime < Arknights.CurTime) then
+					self.AnimationTime = Arknights.CurTime + animtime
+				end
+			end
+		else
+			if(Arknights.CurTime - self.DeadTime > self.AnimationLength * 0.6) then
+				self.StartFadingout = true
+			end
+			if(Arknights.CurTime - self.DeadTime > self.AnimationLength * 0.3) then
+				self.ColorFadingout = true
 			end
 		end
 		fraction = (1 - ((self.AnimationTime - Arknights.CurTime) / animtime))
@@ -140,6 +167,11 @@ if(CLIENT) then
 	function ENT:Draw(flags, manual)
 		if(!manual) then return end
 		if(!self.Animations) then
+			for k,v in pairs(self.AnimTable) do
+				if(v == "") then
+					self.AnimTable[k] = nil
+				end
+			end
 			self:InitializeSpineAnimations()
 			return
 		end
@@ -164,8 +196,18 @@ if(CLIENT) then
 			render.SetMaterial(self.Animations["front"][self.CurrentAnimation][self.AnimationFrame])
 			render.DrawQuadEasy(pos + Vector(0, 0, size * 0.5) + self.RenderOffset, renderNormal, size * self.DrawingWidthScale, size, Color(255, 255, 255, 255), 180)
 		]]
+		if(self.StartFadingout) then
+			self.Alpha = math.Clamp(self.Alpha - (Arknights.GetFixedValue(8) * Arknights.TimeScale), 0, 255)
+		else
+			self.Alpha = math.Clamp(self.Alpha + (Arknights.GetFixedValue(8) * Arknights.TimeScale), 0, 255)
+		end
+		if(self.ColorFadingout) then
+			self.ColorVal = math.Clamp(self.ColorVal - (Arknights.GetFixedValue(10) * Arknights.TimeScale), 0, 255)
+		else
+			self.ColorVal = math.Clamp(self.ColorVal + (Arknights.GetFixedValue(10) * Arknights.TimeScale), 0, 255)
+		end
 		cam.Start3D2D(pos + self.RenderOffset, Angle(0, 90, 90), 1)
-			surface.SetDrawColor(255, 255, 255, 255)
+			surface.SetDrawColor(self.ColorVal, self.ColorVal, self.ColorVal, self.Alpha)
 			surface.SetMaterial(self.Animations["front"][self.CurrentAnimation][self.AnimationFrame])
 			if(self.CurrentSide == 1) then
 				surface.DrawTexturedRectUV(-sizehalf, -size_y, size, size_y, 0, 0, 1, 1)
@@ -175,7 +217,7 @@ if(CLIENT) then
 		cam.End3D2D()
 		if(self.DebugInfo) then
 			cam.Start3D2D(pos + self.RenderOffset, Angle(0, 90, 90), 0.25)
-				local x, y = size, -size_y * 2.5
+				local x, y = size_y, -size_y * 2.5
 				draw.DrawText(self.CurrentAnimation, "Arknights_OperatorDebugFont", x, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
 				y = y + 20
 				local wide, tall = 96, 4
@@ -184,7 +226,7 @@ if(CLIENT) then
 				draw.RoundedBox(0, x, y, wide, tall, Color(0, 0, 0, 200))
 				draw.RoundedBox(0, x, y, wide * fraction, tall, Color(50, 255, 50, 200))
 				y = y + 8
-				draw.DrawText(math.Round(1 - t, 3).." / "..self.AnimationLength.." (x"..Arknights.TimeScale..")", "Arknights_OperatorDebugFont", x, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				draw.DrawText(math.Round(1 - t, 3).." / "..math.Round(self.AnimationLength, 3).." (x"..Arknights.TimeScale..")", "Arknights_OperatorDebugFont", x, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
 			cam.End3D2D()
 		end
 	end
@@ -253,11 +295,7 @@ if(CLIENT) then
 			vel:Normalize()
 			vel = vel * vecforward
 			self:SetPos(pos + vel)
-			if(self.TargetDestination.y > pos.y) then
-				self.IdealSide = 1
-			else
-				self.IdealSide = 0
-			end
+			self:DecideSide(self.TargetDestination)
 		end
 	end
 
@@ -303,9 +341,18 @@ if(CLIENT) then
 	end
 
 	function ENT:Think()
-		if(self.Dead) then return end
+		if(self.Dead) then
+			if(self.Alpha <= 0) then
+				self:Remove()
+			end
+			return
+		end
 		local pos = self:GetPos()
 		if(self.MoveToCursor) then
+			if(input.IsMouseDown(108)) then
+				self:DoKilled()
+				return
+			end
 			if(input.IsMouseDown(107)) then
 				self.TargetDestination = LocalPlayer():GetEyeTrace().HitPos
 			end
@@ -315,6 +362,7 @@ if(CLIENT) then
 			self:Attack()
 			if(self:IsIdleAnimation() && !self:IsAttackingAnimation()) then
 				if(self.NextAttackTime < Arknights.CurTime) then
+					self:DecideSide(self.Enemies[1]:GetPos())
 					if(self.AnimTable.attack_pre) then
 						if(self.CurrentAnimation != self.AnimTable.attack_loop) then
 							self.CurrentAnimation = self.AnimTable.attack_pre
@@ -361,8 +409,16 @@ if(CLIENT) then
 							self.CurrentAnimation = self.AnimTable.idle
 						end
 					else
-						if(self.CurrentAnimation == self.AnimTable.attack_pre && self.AnimationFinished) then
-							self.CurrentAnimation = self.AnimTable.attack_loop
+						if(self.AnimationFinished) then
+							if(self.CurrentAnimation == self.AnimTable.attack_pre) then
+								self.CurrentAnimation = self.AnimTable.attack_loop
+							end
+							if(self.CurrentAnimation == self.AnimTable.attack_end) then
+								self.CurrentAnimation = self.AnimTable.idle
+							end
+							if(self.CurrentAnimation == self.AnimTable.attack_loop && !self.AnimTable.attack_pre) then
+								self.CurrentAnimation = self.AnimTable.idle
+							end
 						end
 					end
 				end
@@ -382,7 +438,7 @@ if(CLIENT) then
 					end
 				end
 			end
-			self.NextAttackTime = 0
+			--self.NextAttackTime = 0
 		end
 		::move::
 		if(self.TargetDestination && self.StayTime < Arknights.CurTime && !self:IsAttackingAnimation()) then
@@ -405,6 +461,12 @@ if(CLIENT) then
 		end
 		::eof::
 		self.AnimationFinished = false
+	end
+
+	function ENT:DoKilled()
+		self.Dead = true
+		self.DeadTime = Arknights.CurTime
+		self.CurrentAnimation = self.AnimTable.die
 	end
 
 	function ENT:Initialize()
