@@ -1,6 +1,11 @@
 local Template = [[
+-- Created using gmod arknights batch creating tool
 AddCSLuaFile()
 ENT.Base = "arknights_enemy_base"
+
+ENT.AttackSound = ""
+ENT.AttackHitSound = ""
+
 ]]
 
 local function ismovingAnimation(anim)
@@ -74,8 +79,14 @@ function Arknights.CreateTemplateEntities()
 			},
 		}
 		tmp = tmp..'ENT.EntityID = "'..v..'"'
-		tmp = tmp.."\n"
-		tmp = tmp.."\n"
+		tmp = tmp.."\n\n"
+		local allanims = {}
+		tmp = tmp..'--[[ Animation IDs\n'
+		for _,anim in ipairs(anims) do
+			tmp = tmp.."		"..anim.."\n"
+		end
+		tmp = tmp..']]'
+		tmp = tmp.."\n\n"
 		for x,anim in ipairs(anims) do
 			if(isattackingAnimation(anim)) then
 				hasanim[2].attack_loop = anim

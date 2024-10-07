@@ -105,6 +105,9 @@ ENT.AttackTimings = {
 	}
 }
 
+ENT.AttackSound = ""
+ENT.AttackHitSound = ""
+
 ENT.DebugInfo = true
 
 if(CLIENT) then

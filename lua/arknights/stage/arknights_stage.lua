@@ -48,7 +48,6 @@ Arknights.Stage.IsHoveringStagePlane = false
 function Arknights.CreateDebugEnemy(class)
 	if(IsValid(AKTE)) then
 		AKTE:Remove()
-		return
 	end
 	AKTE = ents.CreateClientside(class || "arknights_enemy_base")
 	AKTE:Spawn()

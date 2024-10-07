@@ -76,14 +76,18 @@ local pathbeammat = Material("arknights/torappu/arts/[uc]common/path_fx/mask_09.
 function Arknights.RenderPathNodes()
 	if(!Arknights.StageMaker.IsCurrentNodeValid() || Arknights.StageMaker.SelectedMode != 3) then return end
 	local node = Arknights.Stage.Paths[Arknights.StageMaker.SelectedPathNode]
+	local isair = Arknights.IsHighGround(node[1].vec.x, node[1].vec.y)
 	local origin = Arknights.Stage.StructureOrigin
 	local size = Arknights.Stage.GridSize
 	local x, y = Arknights.GetSelectedGrid()
 	local nodeset = false
-	
+	local offset = Vector(0, 0, 0)
+	if(isair) then
+		offset = Vector(0, 0, 24)
+	end
 	for k,v in ipairs(node) do
 		local gridoffset = v.vec
-		local vec = origin + Vector(gridoffset.x * size, gridoffset.y * size, 0) + vectoroffset + spriteoffset
+		local vec = origin + Vector(gridoffset.x * size, gridoffset.y * size, 0) + vectoroffset + spriteoffset + offset
 		if(x == gridoffset.x && y == gridoffset.y) then
 			Arknights.StageMaker.SelectedNode = k
 			nodeset = true
@@ -97,7 +101,7 @@ function Arknights.RenderPathNodes()
 		local next = node[k + 1]
 		if(!next) then continue end
 		local nextoffset = next.vec
-		local nextvec = origin + Vector(nextoffset.x * size, nextoffset.y * size, 0) + vectoroffset + spriteoffset
+		local nextvec = origin + Vector(nextoffset.x * size, nextoffset.y * size, 0) + vectoroffset + spriteoffset + offset
 		render.SetMaterial(pathbeammat)
 		render.DrawBeam(vec, nextvec, 3, 0, 1, Color(255, 0, 0, 155))
 	end
@@ -106,12 +110,11 @@ function Arknights.RenderPathNodes()
 		Arknights.StageMaker.SelectedNode = nil
 	end
 	render.SetMaterial(pathmat)
-	local p = origin + Vector(x * size, y * size, 0) + vectoroffset + spriteoffset
-	local canplacenode = Arknights.IsSelectedGridWalkable(x, y)
+	local p = origin + Vector(x * size, y * size, 0) + vectoroffset + spriteoffset + offset
 	if(Arknights.StageMaker.NodeEditMode == 0) then
-		if(canplacenode && Arknights.Stage.IsHoveringStagePlane) then
+		if(Arknights.Stage.IsHoveringStagePlane) then
 			local lastpoint = node[#node]
-			local lastvec = origin + Vector(lastpoint.vec.x * size, lastpoint.vec.y * size, 0) + vectoroffset + spriteoffset
+			local lastvec = origin + Vector(lastpoint.vec.x * size, lastpoint.vec.y * size, 0) + vectoroffset + spriteoffset + offset
 			render.DrawSprite(p, 16, 16, color_red)
 			render.SetMaterial(pathbeammat)
 			render.DrawBeam(lastvec, p, 3, 0, 1, Color(255, 0, 0, 155))
@@ -176,7 +179,7 @@ function Arknights.RenderStageEditMode()
 end
 
 function Arknights.IsInScreen(x, y)
-	return (x >= 0 && x <= ScrW() && y >= 0 && y <= ScrH())
+	return (x >= 0 && x <= AKScrW() && y >= AKHOFFS && y <= AKScrH())
 end
 
 local nextcalc = 0

@@ -1,6 +1,23 @@
+-- Created using gmod arknights batch creating tool
 AddCSLuaFile()
 ENT.Base = "arknights_enemy_base"
+
+ENT.AttackSound = ""
+ENT.AttackHitSound = ""
+
 ENT.EntityID = "enemy_1000_gopro_2"
+
+--[[ Animation IDs
+		attack
+		die
+		idle
+		move_begin
+		move_end
+		move_loop
+		run_begin
+		run_end
+		run_loop
+]]
 
 ENT.AnimTable = {
 		attack_pre = "",

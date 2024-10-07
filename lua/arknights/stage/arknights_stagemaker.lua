@@ -85,6 +85,13 @@ function Arknights.IsSpawn(id)
 	return spawns[id]
 end
 
+function Arknights.IsHighGround(x, y)
+	if(Arknights.Stage.Structures[x] && Arknights.Stage.Structures[x][y]) then
+		return (Arknights.Stage.Structures[x][y].type == "wall" || Arknights.Stage.Structures[x][y].type == "ranged")
+	end
+	return false
+end
+
 function Arknights.GetStructureData(id)
 	local data = table.Copy(Arknights.StageMaker.TileData[id])
 	return data
@@ -118,9 +125,16 @@ function Arknights.CreateSpawnModelEntity(x, y, id)
 	if(Arknights.Stage.Structures_Entities[x][y] && IsValid(Arknights.Stage.Structures_Entities[x][y])) then -- Remove old entity
 		Arknights.Stage.Structures_Entities[x][y]:Remove()
 	end
+	local strdata = Arknights.Stage.Structures[x]
+	local offset = Vector(0, 0, 0)
+	if(strdata && strdata[y]) then
+		if(strdata[y].type == "wall" || strdata[y].type == "ranged") then
+			offset = Vector(0, 0, 24)
+		end
+	end
 	local model, color = Arknights.Stage.SpawnModelList[id], Arknights.Stage.SpawnColorList[id]
 	Arknights.Stage.Structures_Entities[x][y] = ClientsideModel(model)
-	Arknights.Stage.Structures_Entities[x][y]:SetPos(Arknights.Stage.StructureOrigin + Vector(x * Arknights.Stage.GridSize, y * Arknights.Stage.GridSize, 0) + Vector(24, 24, 24))
+	Arknights.Stage.Structures_Entities[x][y]:SetPos(Arknights.Stage.StructureOrigin + Vector(x * Arknights.Stage.GridSize, y * Arknights.Stage.GridSize, 0) + Vector(24, 24, 24) + offset)
 	Arknights.Stage.Structures_Entities[x][y]:Spawn()
 	Arknights.Stage.Structures_Entities[x][y]:SetColor(color)
 	Arknights.Stage.Structures_Entities[x][y]:SetRenderMode(RENDERMODE_TRANSALPHA)
@@ -209,7 +223,6 @@ function Arknights.StageMaker.ClickedFunc(hold)
 				if(!Arknights.StageMaker.IsCurrentNodeValid()) then
 					Arknights.StageMaker.NewPathNode(x, y)
 				else
-					if(!Arknights.IsSelectedGridWalkable(x, y)) then return end
 					Arknights.StageMaker.NewNode(x, y)
 				end
 			else
