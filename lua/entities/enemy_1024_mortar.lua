@@ -22,7 +22,7 @@ ENT.AnimTable = {
 
 		combat = "",
 
-		idle = "",
+		idle = "idle_2",
 		die = "die",
 
 		move_pre = "",
@@ -37,4 +37,20 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.RangedAttack = true
+ENT.AttackProjectileEntity = ""
+ENT.IsFirstTimeAttacking = false
+
+function ENT:CustomOnAttack(attackcount)
+	if(self.IsFirstTimeAttacking) then return end
+	self.StayTime = Arknights.CurTime + 20
+	self.IsFirstTimeAttacking = true
+end
+
+function ENT:CustomOnThink()
+	if(self.StayTime > Arknights.CurTime && #self.Enemies > 0) then
+		self.AnimTable.idle = "idle_1"
+	else
+		self.AnimTable.idle = "idle_2"
+	end
+end

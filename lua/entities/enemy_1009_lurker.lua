@@ -38,4 +38,4 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.InvisibleAbility = true

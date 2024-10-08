@@ -35,4 +35,8 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.RangedAttack = true
+ENT.CanAttack = false
+ENT.AttackProjectileEntity = ""
+ENT.RenderOffset = Vector(0, 0, 86)
+ENT.CanBeBlocked = false

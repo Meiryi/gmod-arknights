@@ -32,7 +32,7 @@ ENT.AnimTable = {
 
 ENT.AttackTimings = {
 	{
-		timing = 0.5,
+		timing = 0.35,
 		attacked = false,
 	}
 }

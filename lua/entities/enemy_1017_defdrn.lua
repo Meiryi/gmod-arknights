@@ -35,4 +35,5 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.RenderOffset = Vector(0, 0, 86)
+ENT.CanAttack = false

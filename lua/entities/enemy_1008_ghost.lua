@@ -37,4 +37,5 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.CanAttack = false
+ENT.CanBeBlocked = false

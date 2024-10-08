@@ -19,7 +19,7 @@ ENT.EntityID = "enemy_1001_bigbo"
 
 ENT.AnimTable = {
 		attack_pre = "",
-		attack_loop = "attack",
+		attack_loop = "attack2",
 		attack_end = "",
 
 		combat = "",

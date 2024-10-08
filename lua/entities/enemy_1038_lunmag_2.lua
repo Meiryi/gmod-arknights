@@ -36,4 +36,6 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.MaxTargets = 2
+ENT.RangedAttack = true
+ENT.AttackProjectileEntity = ""

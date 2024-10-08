@@ -18,9 +18,9 @@ ENT.EntityID = "enemy_1010_demon_2"
 ]]
 
 ENT.AnimTable = {
-		attack_pre = "",
-		attack_loop = "attack",
-		attack_end = "",
+		attack_pre = "attack",
+		attack_loop = "attack_nopre",
+		attack_end = "attack_end",
 
 		combat = "",
 
@@ -35,7 +35,7 @@ ENT.AnimTable = {
 
 ENT.AttackTimings = {
 	{
-		timing = 0.5,
+		timing = 0.35,
 		attacked = false,
 	}
 }

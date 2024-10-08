@@ -20,6 +20,8 @@ ENT.AnimTable = {
 		attack_loop = "attack",
 		attack_end = "",
 
+		start = "start",
+
 		combat = "",
 
 		idle = "idle",

@@ -5,5 +5,6 @@ function Arknights.SetEnemyStats(ent)
 	ent["rangeRadius"] = stats[1].enemyData.rangeRadius.m_value
 	for k,v in pairs(stats[1].enemyData.attributes) do
 		ent[k] = v.m_value
+		ent["def_"..k] = v.m_value
 	end
 end

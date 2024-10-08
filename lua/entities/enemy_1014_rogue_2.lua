@@ -36,4 +36,14 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+
+ENT.AttackTimings = {
+	{
+		timing = 0.3,
+		attacked = false,
+	},
+	{
+		timing = 0.6,
+		attacked = false,
+	}
+}

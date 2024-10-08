@@ -3,6 +3,11 @@ function Arknights.GetFixedValue(input)
     return input / (target / RealFrameTime())
 end
 
+function Arknights.GetFixedMovingSpeed(input)
+    local target = 1
+    return input / (target / RealFrameTime())
+end
+
 function Arknights.ConsoleCommand(cmd)
     LocalPlayer():ConCommand(cmd)
 end

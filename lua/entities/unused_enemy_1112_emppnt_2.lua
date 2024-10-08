@@ -5,22 +5,20 @@ ENT.Base = "arknights_enemy_base"
 ENT.AttackSound = ""
 ENT.AttackHitSound = ""
 
-ENT.EntityID = "enemy_1113_empace"
+ENT.EntityID = "enemy_1112_emppnt_2"
 
 --[[ Animation IDs
-		attack_1_end
-		attack_1_idle
-		attack_1_loop
-		attack_1_start
-		attack_2
+		attack
 		die
 		idle
 		move
+		move_end
+		move_start
 ]]
 
 ENT.AnimTable = {
 		attack_pre = "",
-		attack_loop = "",
+		attack_loop = "attack",
 		attack_end = "",
 
 		combat = "",
@@ -30,7 +28,7 @@ ENT.AnimTable = {
 
 		move_pre = "",
 		move = "move",
-		move_end = "",
+		move_end = "move_end",
 
 }
 
@@ -40,4 +38,5 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.RenderOffset = Vector(0, 0, 86)
+ENT.CanBeBlocked = false

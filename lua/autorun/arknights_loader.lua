@@ -37,8 +37,8 @@ if(CLIENT) then -- This is a fully clientsided game, don't need to create dircto
 	file.CreateDir("arknights/multiplayer")
 	file.CreateDir("arknights/avatars")
 	file.CreateDir("arknights/batching")
-
-	if(!Arknights.DataInited) then
+	local reload = true
+	if(!Arknights.DataInited || reload) then
 		local data = util.JSONToTable(file.Read("data_static/arknights/enemy_database.json", "GAME"), true)
 		Arknights.EnemyStats = data
 		local data = util.JSONToTable(file.Read("data_static/arknights/enemy_handbook_table.json", "GAME"), true)

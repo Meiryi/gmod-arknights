@@ -32,8 +32,11 @@ ENT.AnimTable = {
 
 ENT.AttackTimings = {
 	{
-		timing = 0.5,
+		timing = 0.125,
 		attacked = false,
 	}
 }
-		
+ENT.RangedAttack = true
+ENT.AttackProjectileEntity = ""
+ENT.RenderOffset = Vector(0, 0, 86)
+ENT.CanBeBlocked = false

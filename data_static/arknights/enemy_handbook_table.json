@@ -645,6 +645,27 @@
       ],
       "invisibleDetail": false
     },
+      "enemy_1003_ncbow_3": {
+      "enemyId": "enemy_1003_ncbow_3",
+      "enemyIndex": "A2",
+      "enemyTags": null,
+      "sortId": 13,
+      "name": "Senior Crossbowman",
+      "enemyLevel": "NORMAL",
+      "description": "One of Reunion's senior ranged soldiers, more powerful than a Crossbowman Leader. Equipped with illegally obtained weapons and armor, they wear masks to conceal their identities during operations.",
+      "attackType": null,
+      "ability": null,
+      "isInvalidKilled": false,
+      "overrideKillCntInfos": {},
+      "hideInHandbook": false,
+      "hideInStage": true,
+      "abilityList": [],
+      "linkEnemies": [],
+      "damageType": [
+        "PHYSIC"
+      ],
+      "invisibleDetail": false
+    },
     "enemy_1011_wizard": {
       "enemyId": "enemy_1011_wizard",
       "enemyIndex": "A3",
@@ -1069,6 +1090,32 @@
       "name": "Lurker",
       "enemyLevel": "NORMAL",
       "description": "One of Reunion's special soldiers. They move swiftly and stealthily, making it almost impossible to detect them before they engage in combat. Therefore, teamwork is needed in order to defeat them.",
+      "attackType": null,
+      "ability": null,
+      "isInvalidKilled": false,
+      "overrideKillCntInfos": {},
+      "hideInHandbook": false,
+      "hideInStage": true,
+      "abilityList": [
+        {
+          "text": "<$ba.invisible>Invisible</>",
+          "textFormat": "NORMAL"
+        }
+      ],
+      "linkEnemies": [],
+      "damageType": [
+        "PHYSIC"
+      ],
+      "invisibleDetail": false
+    },
+    "enemy_1009_lurker_2": {
+      "enemyId": "enemy_1009_lurker_2",
+      "enemyIndex": "C0",
+      "enemyTags": null,
+      "sortId": 32,
+      "name": "Lurker Leader",
+      "enemyLevel": "NORMAL",
+      "description": "One of Reunion's special soldiers, more dangerous than normal Lurker. They move swiftly and stealthily, making it almost impossible to detect them before they engage in combat. Therefore, teamwork is needed in order to defeat them.",
       "attackType": null,
       "ability": null,
       "isInvalidKilled": false,
@@ -1969,8 +2016,8 @@
       ],
       "invisibleDetail": false
     },
-    "enemy_1036_amraoe": {
-      "enemyId": "enemy_1036_amraoe",
+    "enemy_1036_amraoe_b": {
+      "enemyId": "enemy_1036_amraoe_b",
       "enemyIndex": "A7",
       "enemyTags": null,
       "sortId": 71,
@@ -1995,8 +2042,34 @@
       ],
       "invisibleDetail": false
     },
-    "enemy_1037_lunsbr": {
-      "enemyId": "enemy_1037_lunsbr",
+    "enemy_1036_amraoe_2": {
+      "enemyId": "enemy_1036_amraoe_2",
+      "enemyIndex": "A7",
+      "enemyTags": null,
+      "sortId": 71,
+      "name": "Shielded Senior Caster Leader",
+      "enemyLevel": "ELITE",
+      "description": "One of Reunion's elite Casters, more dangerous than a Shielded Senior Caster. They use complex Area-of-Effect Arts, making them more potent than normal Casters. They also seem to have fortified their defenses with Arts. and must be handled with caution. Due to their special state, they may be more vulnerable to Arts damage.",
+      "attackType": null,
+      "ability": null,
+      "isInvalidKilled": false,
+      "overrideKillCntInfos": {},
+      "hideInHandbook": false,
+      "hideInStage": true,
+      "abilityList": [
+        {
+          "text": "Deals area damage to Operators on the four cardinal tiles next to the primary target.",
+          "textFormat": "NORMAL"
+        }
+      ],
+      "linkEnemies": [],
+      "damageType": [
+        "MAGIC"
+      ],
+      "invisibleDetail": false
+    },
+    "enemy_1037_lunsabr": {
+      "enemyId": "enemy_1037_lunsabr",
       "enemyIndex": "33",
       "enemyTags": null,
       "sortId": 72,
@@ -2255,8 +2328,8 @@
       ],
       "invisibleDetail": false
     },
-    "enemy_1043_zomsbr": {
-      "enemyId": "enemy_1043_zomsbr",
+    "enemy_1043_zomsabr": {
+      "enemyId": "enemy_1043_zomsabr",
       "enemyIndex": "P1",
       "enemyTags": null,
       "sortId": 82,

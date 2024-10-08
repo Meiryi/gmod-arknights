@@ -34,8 +34,9 @@ ENT.AnimTable = {
 
 ENT.AttackTimings = {
 	{
-		timing = 0.5,
+		timing = 0.3,
 		attacked = false,
 	}
 }
-		
+ENT.RenderOffset = Vector(0, 0, 128)
+ENT.CanBeBlocked = false

@@ -32,8 +32,19 @@ ENT.AnimTable = {
 
 ENT.AttackTimings = {
 	{
-		timing = 0.5,
+		timing = 0.25,
 		attacked = false,
 	}
 }
-		
+
+function ENT:CustomOnThink()
+	if(self:IsMovementAnimation()) then
+		self.moveSpeed = math.Clamp(self.moveSpeed + Arknights.GetFixedValue(0.0125), 0, 6.5)
+		self.atk = math.Clamp(self.atk + Arknights.GetFixedValue(1.75), 0, 4000)
+	end
+end
+
+function ENT:CustomOnAttack(attackcount)
+	self.moveSpeed = self.def_moveSpeed
+	self.atk = self.def_atk
+end

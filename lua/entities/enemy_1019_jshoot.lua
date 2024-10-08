@@ -37,4 +37,6 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.InvisibleAbility = true
+ENT.RangedAttack = true
+ENT.AttackProjectileEntity = ""
