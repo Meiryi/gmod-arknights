@@ -1,6 +1,7 @@
 local sd = {
 	select = "sound/arknights/mp3/g_ui/g_ui_btn_n.mp3",
 	confirm = "sound/arknights/mp3/g_ui/g_ui_confirm.mp3",
+	switch = "sound/arknights/mp3/g_ui/g_ui_tabswitch.mp3",
 	back = "sound/arknights/mp3/g_ui/g_ui_back.mp3",
 	detail = "sound/arknights/mp3/g_ui/g_ui_detailcheck.mp3",
 	tickdown = "sound/arknights/mp3/g_ui/g_ui_tickdown.mp3",

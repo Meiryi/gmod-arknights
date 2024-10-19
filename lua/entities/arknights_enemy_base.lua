@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 --[[
-	enemy_1167_dubow
+	
 ]]
 
 ENT.Type = "anim"
@@ -85,6 +85,7 @@ ENT.NextAttackTime = 0
 ENT.AnimationLength = 1
 ENT.ArrivedDestination = false
 ENT.StopThinkTime = 0
+ENT.NextRunAttackTime = 0
 
 ENT.Dead = false
 ENT.DeadTime = 0
@@ -109,6 +110,7 @@ ENT.AnimTable = {
 }
 ENT.AnimTable_Backup = nil
 ENT.RegisteredAttackAnim = {}
+ENT.NoRepeatAnimations = {}
 
 ENT.AttackTimings = {
 	{
@@ -128,6 +130,9 @@ if(CLIENT) then
 	function ENT:CustomOnThink() end
 	function ENT:CustomOnAttack(attackcount) end
 	function ENT:CustomOnAttackTarget(target, attackcount) end
+	function ENT:CustomOnPaintWorld(fullsize, size, color) end
+	function ENT:CustomOnPaint3D2D(fullsize, size, color) end
+	function ENT:CustomOnDecideAnimation() end
 
 	function ENT:InitializeSpineAnimations()
 		self.Animations = Arknights.CacheSpineAnimations(self.BaseFolder, self.EntityID)
@@ -148,6 +153,7 @@ if(CLIENT) then
 
 	ENT.lastanim = nil
 	function ENT:DecideAnimation()
+		self:CustomOnDecideAnimation()
 		local animtable = self.Animations["front"][self.CurrentAnimation]
 		local frames = #animtable
 		local animtime = (frames * self.AnimationFPS)
@@ -164,11 +170,13 @@ if(CLIENT) then
 			self.AnimationFinished = true
 		end
 		if(!self.Dead) then
-			if(!self.AnimationTime) then
-				self.AnimationTime = Arknights.CurTime + animtime
-			else
-				if(self.AnimationTime < Arknights.CurTime) then
+			if(!self.NoRepeatAnimations[self.CurrentAnimation]) then
+				if(!self.AnimationTime) then
 					self.AnimationTime = Arknights.CurTime + animtime
+				else
+					if(self.AnimationTime < Arknights.CurTime) then
+						self.AnimationTime = Arknights.CurTime + animtime
+					end
 				end
 			end
 		else
@@ -247,15 +255,17 @@ if(CLIENT) then
 		else
 			self.ColorMul = math.Clamp(self.ColorMul + Arknights.GetFixedValue(0.025), 0.4, 1)
 		end
+		local clr = self.ColorVal * self.ColorMul
+		surface.SetDrawColor(clr, clr, clr, self.Alpha)
+		surface.SetMaterial(self.Animations["front"][self.CurrentAnimation][self.AnimationFrame])
+		self:CustomOnPaintWorld(size_y, size, color)
 		cam.Start3D2D(pos + self.RenderOffset, Angle(0, 90, 90), 1)
-			local clr = self.ColorVal * self.ColorMul
-			surface.SetDrawColor(clr, clr, clr, self.Alpha)
-			surface.SetMaterial(self.Animations["front"][self.CurrentAnimation][self.AnimationFrame])
 			if(self.CurrentSide == 1) then
 				surface.DrawTexturedRectUV(-sizehalf, -size_y, size, size_y, 0, 0, 1, 1)
 			else
 				surface.DrawTexturedRectUV(-sizehalf, -size_y, size, size_y, 1, 0, 0, 1)
 			end
+			self:CustomOnPaint3D2D(size_y, size, color)
 		cam.End3D2D()
 		if(self.DebugInfo) then
 			cam.Start3D2D(pos + self.RenderOffset, Angle(0, 90, 90), 0.3)
@@ -454,7 +464,8 @@ if(CLIENT) then
 			end
 		end
 		self:FindEnemy()
-		if(#self.Enemies > 0 && self.CanAttack) then
+		self:CustomOnThink()
+		if(#self.Enemies > 0 && self.CanAttack && self.NextRunAttackTime < Arknights.CurTime) then
 			self:Attack()
 			if(self:IsIdleAnimation() && !self:IsAttackingAnimation()) then
 				if(self.NextAttackTime < Arknights.CurTime) then
@@ -541,7 +552,6 @@ if(CLIENT) then
 			--self.NextAttackTime = 0
 		end
 		::move::
-		self:CustomOnThink()
 		if(self.TargetDestination && self.StayTime < Arknights.CurTime && !self:IsAttackingAnimation()) then
 			if(pos:Distance(self.TargetDestination) > 8 && !self.IsBlocked) then
 				self:Move()

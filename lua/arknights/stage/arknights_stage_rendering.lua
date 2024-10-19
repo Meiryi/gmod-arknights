@@ -72,7 +72,7 @@ local spriteoffset = Vector(0, 0, 12)
 local framemat = Material("arknights/meiryi/frame.png")
 local pathmat = Material("arknights/meiryi/arts/node/node_curr_trans.png", "smooth")
 local pathbeammat = Material("arknights/torappu/arts/[uc]common/path_fx/mask_09.png")
-
+local timedColor = Color(150, 255, 150, 255)
 function Arknights.RenderPathNodes()
 	if(!Arknights.StageMaker.IsCurrentNodeValid() || Arknights.StageMaker.SelectedMode != 3) then return end
 	local node = Arknights.Stage.Paths[Arknights.StageMaker.SelectedPathNode]
@@ -96,7 +96,11 @@ function Arknights.RenderPathNodes()
 		render.DrawSprite(vec, 16, 16, color_red)
 		local scpos = (vec - spriteoffset):ToScreen()
 		cam.Start2D()
-			draw.DrawText("#"..k.." ["..v.timer.."s]", "Arknights_StageMaker_PathNode_Timer_0.5x", scpos.x, scpos.y, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+		local clr = color_white
+			if(v.timer > 0) then
+				clr = timedColor
+			end
+			draw.DrawText("#"..k.." ["..v.timer.."s]", "Arknights_StageMaker_PathNode_Timer_0.5x", scpos.x, scpos.y, clr, TEXT_ALIGN_CENTER)
 		cam.End2D()
 		local next = node[k + 1]
 		if(!next) then continue end
@@ -132,10 +136,18 @@ function Arknights.RenderStageEditMode()
 	local dir = Arknights.Stage.CursorDir
 	local max_x, max_y = gridx - 1, gridy - 1
 	local intersection = util.IntersectRayWithPlane(Arknights.Stage.ViewPointOrigin, dir, origin, Vector(0, 0, 1))
+	local intersection2 = util.IntersectRayWithPlane(Arknights.Stage.ViewPointOrigin, dir, origin + Vector(0, 0, 24), Vector(0, 0, 1))
 	local _x, _y = -32767, -32767
 	if(intersection) then
 		_x = math.floor((intersection.x - origin.x) / size)
 		_y = math.floor((intersection.y - origin.y) / size)
+	end
+	if(intersection2) then
+		local x, y = math.floor((intersection2.x - origin.x) / size), math.floor((intersection2.y - origin.y) / size)
+		if(Arknights.IsHighGround(x, y)) then
+			_x = x
+			_y = y
+		end
 	end
 
 	render.SetMaterial(framemat)

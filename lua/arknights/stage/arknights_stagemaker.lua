@@ -228,6 +228,9 @@ function Arknights.StageMaker.ClickedFunc(hold)
 			else
 				Arknights.StageMaker.ModifyNodeTimer(Arknights.StageMaker.SelectedNode)
 			end
+		elseif(Arknights.StageMaker.SelectedMode == 4) then
+			if(hold) then return end
+			print("exec")
 		end
 	else
 		if(Arknights.StageMaker.SelectedMode == 1) then

@@ -1,16 +1,22 @@
 Arknights = Arknights || {}
-Arknights.CurTime = SysTime()
-Arknights.CurTimeUnScaled = SysTime()
+Arknights.CurTime = Arknights.CurTime || 0
+Arknights.CurTimeUnScaled = Arknights.CurTimeUnScaled || 0
 Arknights.TimeScale = 1
 Arknights.Version = "dev"
 Arknights.EnemyStats = Arknights.EnemyStats || {}
 Arknights.EnemyDatas = Arknights.EnemyDatas || {}
 Arknights.EnemyStatsRating = Arknights.EnemyStatsRating || {}
 Arknights.DataInited = Arknights.DataInited || false
+local loadorder = {
+	"library",
+	"settings",
+	"sys",
+	"ui",
+	"operator",
+	"stage",
+}
 
-local f, d = file.Find("lua/arknights/*", "GAME")
-
-for k,v in pairs(d) do
+for k,v in ipairs(loadorder) do
 	if(v == "server") then continue end
 	local fn = file.Find("lua/arknights/"..v.."/*.lua", "GAME")
 	for x,y in pairs(fn) do

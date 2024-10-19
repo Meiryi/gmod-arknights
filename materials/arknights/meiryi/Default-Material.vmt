@@ -1,0 +1,6 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "arknights/meiryi/Default-Material"
+	"$translucent" 1
+	"$alphatest" 1
+}

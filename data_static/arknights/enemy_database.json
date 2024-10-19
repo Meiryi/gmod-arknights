@@ -25615,7 +25615,7 @@
 				},
 				"rangeRadius": {
 					"m_defined": true,
-					"m_value": 2.35
+					"m_value": 0
 				},
 				"enemyTags": {
 					"m_defined": true,

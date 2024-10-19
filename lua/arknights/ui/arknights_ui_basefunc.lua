@@ -1,8 +1,3 @@
-function Arknights.GetFixedValue(inputNum) 
-    local target = 0.016666
-    return inputNum / (target / RealFrameTime())
-end
-
 function Arknights.GetTextSize(font, text)
     surface.SetFont(font)
     return surface.GetTextSize(text)
@@ -290,16 +285,17 @@ function Arknights.CreateMatButton(parent, x, y, w, h, mat, func)
     local clr = 255
     local keydown = false
     local hovered = false
+    bg.mat = mat
     bg:NoClipping(false)
     bg.Paint2x = function() end
     bg.Paint = function()
         bg.Paint2x()
         surface.SetDrawColor(clr, clr, clr, 255)
-        surface.SetMaterial(mat)
+        surface.SetMaterial(bg.mat)
         surface.DrawTexturedRect(0, 0, w, h)
     end
     function bg:OnMousePressed()
-        func()
+        func(bg)
     end
     return bg
 end

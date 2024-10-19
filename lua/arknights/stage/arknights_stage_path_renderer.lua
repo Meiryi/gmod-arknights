@@ -46,6 +46,7 @@ local render_DrawBox = render.DrawBox
 hook.Add("PostDrawOpaqueRenderables", "Arknights_PathRenderer", function()
 	local origin = Arknights.Stage.StructureOrigin
 	render.SetMaterial(renderMaterial)
+	cam.IgnoreZ(true)
 	for k, v in ipairs(Arknights.Stage.RenderingPathParticles) do
 		if(v.alpha <= 0) then
 			table.remove(Arknights.Stage.RenderingPathParticles, k)
@@ -102,4 +103,5 @@ hook.Add("PostDrawOpaqueRenderables", "Arknights_PathRenderer", function()
 			path.currentPathIndex = path.currentPathIndex + 1
 		end
 	end
+	cam.IgnoreZ(false)
 end)

@@ -201,6 +201,27 @@ function Arknights.StageMaker.CacheMaterial()
 	end
 end
 
+Arknights.StageMaker.CachedUsableEnemies = Arknights.StageMaker.CachedUsableEnemies || {}
+Arknights.StageMaker.HistoryEnemies = {}
+function Arknights.StageMaker.CacheEnemies()
+	local f = file.Find("lua/entities/enemy_*_*.lua", "GAME")
+	for k,v in ipairs(f) do
+		local name = string.Replace(v, ".lua", "")
+		table.insert(Arknights.StageMaker.CachedUsableEnemies, name)
+	end
+end
+
+function Arknights.StageMaker.EnemyBrowser()
+	if(#Arknights.StageMaker.CachedUsableEnemies <= 0) then
+		Arknights.StageMaker.CacheEnemies()
+	end
+
+end
+
+function Arknights.StageMaker.CalculateStageMaxTime()
+
+end
+
 Arknights.StageMaker.MaterialBrowserPanel = Arknights.StageMaker.MaterialBrowserPanel || nil
 function Arknights.StageMaker.MaterialBrowser(baseui)
 	if(IsValid(Arknights.StageMaker.MaterialBrowserPanel)) then
@@ -588,6 +609,7 @@ function Arknights.CreateStageUI()
 		Arknights.StageMaker.SelectedPathNode = nil
 		Arknights.StageMaker.SelectedNode = nil
 		Arknights.StageMaker.NodeEditMode = 0
+		Arknights.StageMaker.HistoryEnemies = {}
 
 		local wide = AKScrW() * 0.2
 		local origin = AKScrW() - wide
@@ -709,11 +731,16 @@ function Arknights.CreateStageUI()
 				id = 3,
 				tip = "Node Path Tool",
 			},
+			{
+				material = "arknights/torappu/common_icon/sprite_kill.png",
+				id = 4,
+				tip = "Enemy Placement",
+			},
 		}
 		local spacing = AKScreenScaleH(2)
 		local height = toolbar:GetTall() - (spacing * 2)
 		local margin = toolbar:GetWide() / #tools
-		local gap = margin * 0.25
+		local gap = margin * 0.2
 		local nextX = gap
 		for k,v in ipairs(tools) do
 			local button = Arknights.CreateMatButton(toolbar, nextX, spacing, height, height, Arknights.GetCachedMaterial(v.material), function()
@@ -741,17 +768,56 @@ function Arknights.CreateStageUI()
 			Arknights.StageMaker.KeyCodePressed(key)
 		end
 
-		local h = AKScreenScaleH(48)
+		local h = AKScreenScaleH(52)
 		local timingbar = Arknights.CreatePanel(ui, 0, AKScrH() - h, AKScrW(), h, Color(30, 30, 30, 255))
 		timingbar:SetZPos(-1)
-		local margin = AKScreenScaleH(4)
-		local renderwide = timingbar:GetWide() - (margin * 2)
+		local margin = AKScreenScaleH(16)
+		local yPadding = AKScreenScaleH(34)
+		local lineHeight = AKScreenScaleH(2)
+		local timingLine = Arknights.CreatePanel(timingbar, margin, yPadding, AKScrW() - (margin * 2), lineHeight, Color(0, 0, 0, 255))
+		timingLine.oPaint = timingLine.Paint
+		timingLine.Paint = function()
+			timingLine.oPaint()
+			local fraction = math.Clamp(Arknights.Stage.CurrentTime / Arknights.Stage.MaxTime, 0, 1)
+			local x = timingLine:GetWide() * fraction
+			draw.RoundedBox(0, 0, 0, x, timingLine:GetTall(), Color(255, 255, 255, 255))
+		end
+		local w, h = timingLine:GetWide(), AKScreenScaleH(16)
+		local buttonLayer = Arknights.CreatePanel(timingbar, margin, yPadding - h * 0.5, w, h, Color(255, 255, 255, 255))
+		function buttonLayer:OnMousePressed()
+			local fraction = math.Clamp((gui.MouseX() - self:GetPos()) / self:GetWide(), 0, 1)
+			Arknights.Stage.CurrentTime = fraction * Arknights.Stage.MaxTime
+			Arknights.ButtonClickSound("switch")
+		end
+		buttonLayer.Alpha = 0
+		buttonLayer.Think = function()
+			if(buttonLayer:IsHovered()) then
+				buttonLayer.Alpha = math.Clamp(buttonLayer.Alpha + Arknights.GetFixedValue(1.5), 0, 10)
+			else
+				buttonLayer.Alpha = math.Clamp(buttonLayer.Alpha - Arknights.GetFixedValue(1.5), 0, 10)
+			end
+			buttonLayer:SetAlpha(buttonLayer.Alpha)
+		end
 		timingbar.oPaint = timingbar.Paint
 		timingbar.Paint = function()
 			timingbar.oPaint()
-			
+			local p1, p2 = timingLine:GetX(), timingLine:GetX() + timingLine:GetWide()
+			local y = timingLine:GetY() + timingLine:GetTall() + lineHeight
+			draw.DrawText(math.Round(Arknights.Stage.CurrentTime, 2).."s", "Arknights_StageMaker_0.5x", p1, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+			draw.DrawText(math.Round(Arknights.Stage.MaxTime, 2).."s", "Arknights_StageMaker_0.5x", p2, y, Color(255, 255, 255, 255), TEXT_ALIGN_RIGHT)
 		end
-
+		local size = AKScreenScaleH(16)
+		local playmat = Arknights.GetCachedMaterial("arknights/torappu/common_icon/play.png")
+		local stopmat = Arknights.GetCachedMaterial("arknights/torappu/common_icon/stop.png")
+		local playButton = Arknights.CreateMatButton(timingbar, timingbar:GetWide() * 0.5 - size * 0.5, AKScreenScaleH(2), size, size, playmat, function(self)
+			if(Arknights.Stage.StartTimer) then
+				self.mat = playmat
+			else
+				self.mat = stopmat
+			end
+			Arknights.Stage.StartTimer = !Arknights.Stage.StartTimer
+			Arknights.ButtonClickSound("select")
+		end)
 		Arknights.StageMaker.EditorFrame = properties
 	end
 

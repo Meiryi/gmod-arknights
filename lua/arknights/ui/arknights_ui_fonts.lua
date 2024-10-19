@@ -265,3 +265,23 @@ surface.CreateFont("Arknights_OperatorDebugFont_Small", {
 	blursize = 0,
 	scanlines = 0,
 })
+
+surface.CreateFont("Arknights_Paused_1X", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(32),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_Paused_0.5X", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(12),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})

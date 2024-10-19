@@ -6,6 +6,7 @@ Arknights.CurrentMusic = Arknights.CurrentMusic || "null"
 Arknights.IdealMusic = Arknights.IdealMusic || "void"
 Arknights.MusicVolume = Arknights.MusicVolume || 1
 Arknights.ShouldPlayMusic = Arknights.ShouldPlayMusic || false
+Arknights.UnAffectedCurTime = Arknights.UnAffectedCurTime || 0
 
 function Arknights.RegisterMusic(name, intro, loop)
 	Arknights.Soundtracks[name] = {
@@ -37,9 +38,14 @@ function Arknights.IsValidMusivID(id)
 	return Arknights.Soundtracks[id] != nil
 end
 
+function Arknights.VolumeLerping(input)
+    local target = 0.016666
+    return input / (target / ARKNIGHTS_LASTFRAMETIME)
+end
+
 local nextplaysd = 0
 function Arknights.PlayMusic(id, loop)
-	if(nextplaysd > Arknights.CurTimeUnScaled) then return end
+	if(nextplaysd > Arknights.UnAffectedCurTime) then return end
 	local music = Arknights.Soundtracks[id]
 	local index = "intro"
 	if(loop) then index = "loop" end
@@ -51,7 +57,7 @@ function Arknights.PlayMusic(id, loop)
 			station:Play()
 		end
 	end)
-	nextplaysd = Arknights.CurTimeUnScaled + 0.1
+	nextplaysd = Arknights.UnAffectedCurTime + 0.1
 	Arknights.CurrentMusic = id
 end
 Arknights.RegisterMusic("lungmenbat",
@@ -115,14 +121,14 @@ Arknights.RegisterMusic("void",
 	"sound/arknights/mp3/sound_beta_02/music/m_sys_void_intro.mp3",
 	"sound/arknights/mp3/sound_beta_02/music/m_sys_void_loop.mp3")
 
-hook.Add("Think", "Arknights_MusicController", function()
+hook.Add("DrawOverlay", "Arknights_MusicController", function()
 	local music = Arknights.Soundtracks[Arknights.CurrentMusic]
 	if(!IsValid(Arknights.GameFrame)) then
 		Arknights.ShouldPlayMusic = false
 	end
 	if(!Arknights.ShouldPlayMusic) then
 		if(IsValid(Arknights.SoundChannel) && Arknights.SoundChannel:GetState() != 2) then
-			Arknights.MusicVolume = math.Clamp(Arknights.MusicVolume - Arknights.GetFixedValue(0.03), 0, 1)
+			Arknights.MusicVolume = math.Clamp(Arknights.MusicVolume - Arknights.VolumeLerping(0.03), 0, 1)
 			Arknights.SoundChannel:SetVolume(Arknights.MusicVolume)
 			if(Arknights.MusicVolume <= 0) then
 				Arknights.SoundChannel:Pause()
@@ -138,10 +144,13 @@ hook.Add("Think", "Arknights_MusicController", function()
 		Arknights.PlayMusic("void")
 		Arknights.MusicPlayed = true
 	end
-	if(!IsValid(Arknights.SoundChannel)) then return end
+	if(!IsValid(Arknights.SoundChannel)) then
+		Arknights.PlayMusic(Arknights.IdealMusic)
+		return
+	end
 	--print(Arknights.SoundChannel:GetTime(), Arknights.SoundChannel:GetLength())
 	if(Arknights.CurrentMusic != Arknights.IdealMusic) then
-		Arknights.MusicVolume = math.Clamp(Arknights.MusicVolume - Arknights.GetFixedValue(0.03), 0, 1)
+		Arknights.MusicVolume = math.Clamp(Arknights.MusicVolume - Arknights.VolumeLerping(0.03), 0, 1)
 		Arknights.SoundChannel:SetVolume(Arknights.MusicVolume)
 		if(Arknights.MusicVolume <= 0) then
 			if(Arknights.IsValidMusivID(Arknights.IdealMusic)) then
@@ -151,7 +160,7 @@ hook.Add("Think", "Arknights_MusicController", function()
 			Arknights.PlayMusic(Arknights.CurrentMusic)
 		end
 	else
-		Arknights.MusicVolume = math.Clamp(Arknights.MusicVolume + Arknights.GetFixedValue(0.03), 0, 1)
+		Arknights.MusicVolume = math.Clamp(Arknights.MusicVolume + Arknights.VolumeLerping(0.03), 0, 1)
 		Arknights.SoundChannel:SetVolume(Arknights.MusicVolume)
 		if(Arknights.SoundChannel:GetTime() >= Arknights.SoundChannel:GetLength() - (0.05 + math.min(FrameTime() * 2, 0.1)) && !Arknights.MusicLooped) then
 			Arknights.PlayMusic(Arknights.CurrentMusic, true)

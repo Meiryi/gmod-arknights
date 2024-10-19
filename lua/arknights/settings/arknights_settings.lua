@@ -9,4 +9,4 @@ Arknights.Settings.Default.DisplayGrids = true
 -- Current settings
 Arknights.Settings.RenderMode = 2
 Arknights.Settings.Language = "en"
-Arknights.Settings.DisplayGrids = true
+Arknights.Settings.DisplayGrids = false

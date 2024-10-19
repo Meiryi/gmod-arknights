@@ -95,10 +95,6 @@ function Arknights.LoadingScreen(loadingbg, funcs)
 			end
 		end
 		draw.RoundedBox(0, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, alpha))
-
-		if(killtime < Arknights.CurTimeUnScaled) then
-			ui:Remove()
-		end
 	end
 end
 

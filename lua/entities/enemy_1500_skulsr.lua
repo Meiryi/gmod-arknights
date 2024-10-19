@@ -29,7 +29,7 @@ ENT.AnimTable = {
 		die = "die",
 
 		move_pre = "",
-		move = "",
+		move = "move2",
 		move_end = "",
 
 }
@@ -40,4 +40,5 @@ ENT.AttackTimings = {
 		attacked = false,
 	}
 }
-		
+ENT.RangedAttack = true
+ENT.AttackProjectileEntity = ""

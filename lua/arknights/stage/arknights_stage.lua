@@ -10,7 +10,8 @@ Arknights.Stage.GridSize = 48
 Arknights.Stage.StructureID = 0
 Arknights.Stage.CurrentTime = 0
 Arknights.Stage.MaxTime = 0
-Arknights.Stage.StartTimer = false
+Arknights.Stage.StartTimer = true
+Arknights.Stage.ExtendHeight = 1
 
 Arknights.Stage.Music = Arknights.Stage.Music || "indust"
 Arknights.Stage.MapID = Arknights.Stage.MapID || "NULL"
@@ -34,9 +35,9 @@ Arknights.Stage.SpawnModelList = {
 }
 
 Arknights.Stage.SpawnColorList = {
-	homebase = Color(0, 180, 255, 220),
-	enemybase_ground = Color(255, 0, 0, 220),
-	enemybase_air = Color(255, 0, 0, 220),
+	homebase = Color(0, 180, 255, 210),
+	enemybase_ground = Color(255, 0, 0, 210),
+	enemybase_air = Color(255, 0, 0, 210),
 }
 
 Arknights.Stage.AmbientLight = Arknights.Stage.AmbientLight || Color(0.7843, 0.9019, 1)
@@ -115,6 +116,7 @@ function Arknights.RebuildStageMeshes()
 	end
 end
 
+local reverseOffset = Vector(24, 24, 0)
 function Arknights.CreateStageMesh(x, y)
 	if(!Arknights.Stage.StructureMeshes[x]) then
 		Arknights.Stage.StructureMeshes[x] = {}
@@ -124,16 +126,25 @@ function Arknights.CreateStageMesh(x, y)
 	end
 	local strdata = Arknights.GetHoveredStructure(x, y)
 	local size = Arknights.Stage.GridSize
+	local size2 = size * Arknights.Stage.ExtendHeight
+	local offset = Vector(0, 0, (size2 * 0.5) - size * 0.5)
 	local origin = Arknights.Stage.StructureOrigin + Vector(x * size, y * size, 0) + strdata.meshoffset
 	local topmesh = Mesh()
 	local sidemesh = Mesh()
 	mesh.Begin(topmesh, MATERIAL_QUADS, 1)
-	mesh.QuadEasy(origin, Vector(0, 0, 1), size, size)
+		mesh.QuadEasy(origin, Vector(0, 0, 1), size, size)
 	mesh.End()
+	--origin = origin - reverseOffset
 	mesh.Begin(sidemesh, MATERIAL_QUADS, 3)
-	mesh.QuadEasy(origin + Vector(24, 0, -24),  Vector(1, 0, 0), size, size)
-	mesh.QuadEasy(origin + Vector(0, -24, -24),  Vector(0, -1, 0), size, size)
-	mesh.QuadEasy(origin + Vector(0, 24, -24),  Vector(0, 1, 0), size, size)
+
+		mesh.QuadEasy(origin + Vector(24, 0, -24) - offset,  Vector(1, 0, 0), size, size2)
+		mesh.QuadEasy(origin + Vector(0, -24, -24) - offset,  Vector(0, -1, 0), size, size2)
+		mesh.QuadEasy(origin + Vector(0, 24, -24) - offset,  Vector(0, 1, 0), size, size2)
+		--[[
+			mesh.Quad(origin + Vector(0, 0, 0), origin + Vector(size, 0, 0), origin + Vector(size, 0, -size2), origin + Vector(0, 0, -size2), Color(255, 255, 255, 255))
+			mesh.Quad(origin + Vector(size, 0, 0), origin + Vector(size, size, 0), origin + Vector(size, size, -size2), origin + Vector(size, 0, -size2), Color(255, 255, 255, 255))
+			mesh.Quad(origin + Vector(size, size, 0), origin + Vector(0, size, 0), origin + Vector(0, size, -size2), origin + Vector(size, size, -size2), Color(255, 255, 255, 255))
+		]]
 	mesh.End()
 	Arknights.Stage.StructureMeshes[x][y] = {
 		top = topmesh,
