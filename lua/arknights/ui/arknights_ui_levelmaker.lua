@@ -57,7 +57,7 @@ function Arknights.LevelMakerUI()
 				else
 					local notfoundbg = Arknights.CreatePanel(panel, 0, 0, previewsize, panel:GetTall(), Color(50, 50, 50, 255))
 					local size = notfoundbg:GetWide() * 0.35
-					local notfoundicon = Arknights.CreateImage(notfoundbg, notfoundbg:GetWide() * 0.5 - size * 0.5, notfoundbg:GetTall() * 0.5 - size * 0.5, size, size, "arknights/torappu/common/empty_big.png")
+					local notfoundicon = Arknights.CreatePanelMat(notfoundbg, notfoundbg:GetWide() * 0.5 - size * 0.5, notfoundbg:GetTall() * 0.5 - size * 0.5, size, size, Arknights.GetCachedMaterial("arknights/torappu/common/empty_big.png"), Color(255, 255, 255, 255))
 				end
 				local sideSize = panel:GetWide() * 0.15
 				local sideTall = panel:GetTall() * 0.5
@@ -119,7 +119,7 @@ function Arknights.LevelMakerUI()
 		scroll.ReloadLevels()
 		Arknights.ReloadLevels = false
 	end
-	pcall(scroll.ReloadLevels)
+	local success, err = pcall(scroll.ReloadLevels)
 
 	local height = AKScreenScaleH(54)
 	local bottomMargin = AKScreenScaleH(10)
@@ -168,6 +168,7 @@ function Arknights.LevelMakerUI()
 					Enemies = {},
 					Spawns = {},
 					Paths = {},
+					MaxTime = 0,
 					Structures = defaultStructures,
 					Structures_Details = {},
 					Background = "arknights/torappu/map/TX_LMC_BG.png",

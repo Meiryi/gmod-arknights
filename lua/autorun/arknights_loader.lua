@@ -7,6 +7,8 @@ Arknights.EnemyStats = Arknights.EnemyStats || {}
 Arknights.EnemyDatas = Arknights.EnemyDatas || {}
 Arknights.EnemyStatsRating = Arknights.EnemyStatsRating || {}
 Arknights.DataInited = Arknights.DataInited || false
+Arknights.Portraits = Arknights.Portraits || {}
+
 local loadorder = {
 	"library",
 	"settings",
@@ -51,6 +53,5 @@ if(CLIENT) then -- This is a fully clientsided game, don't need to create dircto
 		Arknights.EnemyDatas = data.enemyData
 		Arknights.EnemyStatsRating = data.levelInfoList
 		Arknights.DataInited = true
-
 	end
 end

@@ -20,6 +20,7 @@ hook.Add("DrawOverlay", "Arknights_TimeSys", function()
 	Arknights.UnAffectedCurTime = Arknights.UnAffectedCurTime + t
 	if(paused && forcePause) then
 		t = 0
+		_t = 0
 		if(!IsValid(Arknights.WarningPanel) && forcePopup) then
 			local pnl = vgui.Create("DPanel")
 			pnl:SetSize(ScrW(), ScrH())
@@ -43,9 +44,9 @@ hook.Add("DrawOverlay", "Arknights_TimeSys", function()
 			Arknights.WarningPanel:Remove()
 		end
 	end
+	local scaled = t * Arknights.TimeScale
+	Arknights.CurTime = Arknights.CurTime + scaled
 	if(Arknights.Stage.StartTimer) then
-		local scaled = t * Arknights.TimeScale
-		Arknights.CurTime = Arknights.CurTime + scaled
 		Arknights.Stage.CurrentTime = Arknights.Stage.CurrentTime + scaled
 		if(Arknights.Stage.CurrentTime >= Arknights.Stage.MaxTime) then
 			Arknights.Stage.CurrentTime = Arknights.Stage.MaxTime

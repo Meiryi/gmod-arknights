@@ -139,3 +139,13 @@ ENT.AttackTimings = {
 		file.Write("arknights/batching/"..v..".txt", tmp)
 	end
 end
+
+function Arknights.ReformatTable()
+	local tmp = table.Copy(Arknights.EnemyStatsRating)
+	local ret = {}
+	for k,v in pairs(tmp) do
+		ret[v.classLevel] = v
+	end
+	local str = util.TableToJSON(ret, true)
+	SetClipboardText(str)
+end

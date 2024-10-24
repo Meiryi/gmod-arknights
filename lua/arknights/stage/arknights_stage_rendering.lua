@@ -72,7 +72,67 @@ local spriteoffset = Vector(0, 0, 12)
 local framemat = Material("arknights/meiryi/frame.png")
 local pathmat = Material("arknights/meiryi/arts/node/node_curr_trans.png", "smooth")
 local pathbeammat = Material("arknights/torappu/arts/[uc]common/path_fx/mask_09.png")
+local warningmat = Material("arknights/torappu/common_icon/hard_warning_flag.png")
 local timedColor = Color(150, 255, 150, 255)
+function Arknights.RenderPathNode(path)
+	local node = Arknights.Stage.Paths[path]
+	if(!node) then return end
+	local startpos = Arknights.StageMaker.SelectedEnemyPosition
+	local isair = Arknights.IsHighGround(node[1].vec.x, node[1].vec.y)
+	local origin = Arknights.Stage.StructureOrigin
+	local size = Arknights.Stage.GridSize
+	local x, y = Arknights.GetSelectedGrid()
+	local nodeset = false
+	local offset = Vector(0, 0, 0)
+	local startnode = node[1]
+	local diff = startnode.vec.x != startpos.x || startpos.y != startnode.vec.y
+	local color = Color(55, 255, 55, 155)
+	if(diff) then
+		color = Color(255, 0, 0, 255)
+	end
+	if(isair) then
+		offset = Vector(0, 0, 24)
+	end
+	for k,v in ipairs(node) do
+		local gridoffset = v.vec
+		local vec = origin + Vector(gridoffset.x * size, gridoffset.y * size, 0) + vectoroffset + spriteoffset + offset
+		if(x == gridoffset.x && y == gridoffset.y) then
+			Arknights.StageMaker.SelectedNode = k
+			nodeset = true
+		end
+		render.SetMaterial(pathmat)
+		render.DrawSprite(vec, 16, 16, color)
+		local scpos = (vec - spriteoffset):ToScreen()
+		cam.Start2D()
+		local clr = color_white
+			if(v.timer > 0) then
+				clr = timedColor
+			end
+			draw.DrawText("#"..k.." ["..v.timer.."s]", "Arknights_StageMaker_PathNode_Timer_0.5x", scpos.x, scpos.y, clr, TEXT_ALIGN_CENTER)
+		cam.End2D()
+		local next = node[k + 1]
+		if(!next) then continue end
+		local nextoffset = next.vec
+		local nextvec = origin + Vector(nextoffset.x * size, nextoffset.y * size, 0) + vectoroffset + spriteoffset + offset
+		render.SetMaterial(pathbeammat)
+		render.DrawBeam(vec, nextvec, 3, 0, 1, color)
+	end
+
+	if(diff) then
+		local gridoffset = startnode.vec
+		local vec = origin + Vector(startpos.x * size, startpos.y * size, 0) + vectoroffset + spriteoffset + offset
+		render.SetMaterial(pathbeammat)
+		local nextvec = origin + Vector(gridoffset.x * size, gridoffset.y * size, 0) + vectoroffset + spriteoffset + offset
+		render.DrawBeam(vec, nextvec, 3, 0, 1, Color(0, 0, 255, 155))
+		render.SetMaterial(warningmat)
+		render.DrawSprite(vec, 16, 16, Color(0, 0, 255, 255))
+		local scpos = (vec - spriteoffset):ToScreen()
+		cam.Start2D()
+			draw.DrawText("Spawn position diff", "Arknights_StageMaker_PathNode_Timer_0.5x", scpos.x, scpos.y, Color(255, 0, 0, 255), TEXT_ALIGN_CENTER)
+		cam.End2D()
+	end
+end
+
 function Arknights.RenderPathNodes()
 	if(!Arknights.StageMaker.IsCurrentNodeValid() || Arknights.StageMaker.SelectedMode != 3) then return end
 	local node = Arknights.Stage.Paths[Arknights.StageMaker.SelectedPathNode]
@@ -411,7 +471,11 @@ end
 hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", function()
 	local gameactive = Arknights.IsGameActive()
 	Arknights_DrawHUD = !gameactive
-	Arknights.RenderArknightsEntities()
+	--[[
+	cam.Start2D()
+	render.Clear(0, 255, 0, 255)
+	cam.End2D()
+	]]
 	if(!gameactive || Arknights.IsGameFrameVisible()) then return end
 	--[[
 		render.Clear(0, 0, 0, 0, true, true)
@@ -420,6 +484,7 @@ hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", funct
 	Arknights.RenderStage()
 	Arknights.RenderArknightsEntities()
 	Arknights.RenderStageEditMode()
+	Arknights.RenderArknightsEntities()
 
 	cam.Start2D()
 		draw.RoundedBox(0, 0, 0, AKScrW(), AKHOFFS, Color(0, 0, 0, 255))

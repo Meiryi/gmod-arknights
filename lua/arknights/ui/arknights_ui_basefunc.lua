@@ -31,6 +31,7 @@ end
 
 local bordershadow = Material("")
 function Arknights.CreatePanelMat(parent, x, y, w, h, mat, color)
+    if(!color) then color = color_white end
     local panel = vgui.Create("DPanel", parent)
         panel:SetPos(x, y)
         panel:SetSize(w, h)
@@ -171,6 +172,36 @@ function Arknights.CreateScroll(parent, x, y, w, h, color)
 
     frame.CurrrentScroll = 0
     frame.MaximumScroll = 0 -- Don't touch this value
+    frame.Panels = {}
+
+    frame.FiltePanels = function(searchString)
+        for k,v in ipairs(frame.Panels) do
+            if(!IsValid(v)) then
+                table.remove(frame.Panels, k)
+                continue
+            end
+            if(!v.SortString) then continue end
+            if(string.find(v.SortString, searchString)) then
+                if(!frame.HideAnimation) then
+                    v:SetVisible(true)
+                else
+                    v.Display = true
+                end
+            else
+                if(!frame.HideAnimation) then
+                    v:SetVisible(false)
+                    v.Display = false
+                end
+            end
+            local t = v:GetTall() -- So it recalculate the dock position
+            v:SetTall(t - 1)
+            v:SetTall(t)
+        end
+    end
+
+    frame.AddPanel = function(ui)
+        table.insert(frame.Panels, ui)
+    end
 
     local DVBar = frame:GetVBar()
     local down = false

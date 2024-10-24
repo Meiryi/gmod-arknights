@@ -6,6 +6,7 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.WantsTranslucency = true
+ENT.IsArknightsEntity = true
 
 ENT.BaseFolder = "enemies"
 ENT.EntityID = "enemy_1038_lunmag_2"
@@ -18,7 +19,7 @@ ENT.AnimationTime = nil
 
 ENT.CurrentAnimation = -1
 
-ENT.RenderSize = 100
+ENT.RenderSize = 76
 ENT.RenderOffset = Vector(0, 0, 0)
 
 ENT.Attributes = {
@@ -68,11 +69,12 @@ ENT.IdealSide = 1
 ENT.CurrentSide = 1
 ENT.DrawingWidthScale = 1
 
-ENT.MoveToCursor = true
+ENT.MoveToCursor = false
 ENT.AnimationFinished = false
 ENT.CanAttack = true
 ENT.CanBeBlocked = true
 ENT.IsBlocked = false
+ENT.SkipPremoveAnimation = false
 
 ENT.InvisibleAbility = false
 ENT.IsInvisible = false
@@ -124,7 +126,12 @@ ENT.AttackHitSound = ""
 ENT.RangedAttack = false
 ENT.AttackProjectileEntity = ""
 
-ENT.DebugInfo = true
+ENT.DebugInfo = false
+ENT.Debug_DrawPath = false
+
+ENT.CurrentMoveIndex = 1
+ENT.DestinationOffsetTolerance = 4
+ENT.GridPos = Vector(0, 0, 0)
 
 if(CLIENT) then
 	function ENT:CustomOnThink() end
@@ -192,6 +199,28 @@ if(CLIENT) then
 		return true
 	end
 
+	local pathmat = Material("arknights/meiryi/arts/node/node_curr_trans.png", "smooth")
+	local pathbeammat = Material("arknights/torappu/arts/[uc]common/path_fx/mask_09.png")
+	local matsize = 8
+	function ENT:DebugRendering()
+		if(!self.Debug_DrawPath) then return end
+		if(self.TargetDestination) then
+			render.SetMaterial(pathbeammat)
+			render.DrawBeam(self:GetPos(), self.TargetDestination, 1, 0, 1, Color(255, 0, 0, 255))
+			render.SetMaterial(pathmat)
+			render.DrawSprite(self.TargetDestination, matsize, matsize, Color(255, 0, 0, 255))
+		end
+	end
+
+	function ENT:ConvertWorldPositionToGrid()
+		local origin = Arknights.Stage.StructureOrigin
+		local pos = self:GetPos()
+		local size = Arknights.Stage.GridSize
+
+		self.GridPos.x = math.floor((pos.x - origin.x) / size)
+		self.GridPos.y = math.floor((pos.y - origin.y) / size)
+	end
+
 	local renderNormal = Vector(1, 0, 0)--Vector(0.819152, 0.000000, 0.5735767)
 	ENT.FirstFrameRendered = false
 	function ENT:Draw(flags, manual)
@@ -209,6 +238,7 @@ if(CLIENT) then
 		if(self.CurrentAnimation == -1) then
 			self.CurrentAnimation = self.AnimTable.idle
 		end
+		self:ConvertWorldPositionToGrid()
 		local pos = self:GetPos()
 		local size = self.RenderSize * self.DrawingWidthScale
 		local size_y = self.RenderSize
@@ -256,10 +286,14 @@ if(CLIENT) then
 			self.ColorMul = math.Clamp(self.ColorMul + Arknights.GetFixedValue(0.025), 0.4, 1)
 		end
 		local clr = self.ColorVal * self.ColorMul
+
 		surface.SetDrawColor(clr, clr, clr, self.Alpha)
 		surface.SetMaterial(self.Animations["front"][self.CurrentAnimation][self.AnimationFrame])
 		self:CustomOnPaintWorld(size_y, size, color)
-		cam.Start3D2D(pos + self.RenderOffset, Angle(0, 90, 90), 1)
+		local angle = Angle(0, 90, 45)
+		cam.IgnoreZ(true)
+		render.SetColorMaterial()
+		cam.Start3D2D(pos + self.RenderOffset, angle, 1)
 			if(self.CurrentSide == 1) then
 				surface.DrawTexturedRectUV(-sizehalf, -size_y, size, size_y, 0, 0, 1, 1)
 			else
@@ -268,7 +302,7 @@ if(CLIENT) then
 			self:CustomOnPaint3D2D(size_y, size, color)
 		cam.End3D2D()
 		if(self.DebugInfo) then
-			cam.Start3D2D(pos + self.RenderOffset, Angle(0, 90, 90), 0.3)
+			cam.Start3D2D(pos + self.RenderOffset, angle, 0.3)
 				local x, y = size_y, -size_y * 1.75
 				draw.DrawText(self.CurrentAnimation, "Arknights_OperatorDebugFont", x, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
 				y = y + 20
@@ -279,8 +313,13 @@ if(CLIENT) then
 				draw.RoundedBox(0, x, y, wide * fraction, tall, Color(50, 255, 50, 200))
 				y = y + 8
 				draw.DrawText(math.Round(1 - t, 3).." / "..math.Round(self.AnimationLength, 3).." (x"..Arknights.TimeScale..")", "Arknights_OperatorDebugFont", x, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				y = y + 16
+				draw.DrawText("Col : "..self.GridPos.x.." Row : "..self.GridPos.y, "Arknights_OperatorDebugFont", x, y, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
 			cam.End3D2D()
+
+			self:DebugRendering()
 		end
+		cam.IgnoreZ(false)
 	end
 
 	function ENT:SetTargetDestination(pos)
@@ -318,6 +357,33 @@ if(CLIENT) then
 		return self.CurrentAnimation == self.AnimTable_Backup.move_pre
 	end
 
+	function ENT:OnDestinationArrived(currentPathData)
+		if(currentPathData.timer > 0) then
+			self.StayTime = Arknights.CurTime + currentPathData.timer
+		end
+	end
+
+	function ENT:DecideNextDestination()
+		local path = self.MovePath
+		if(!path) then return end
+		local currentPathData = path[self.CurrentMoveIndex]
+		local nextVec = currentPathData.vec
+		local origin = Arknights.Stage.StructureOrigin
+		local size = Arknights.Stage.GridSize
+		local dest = origin + Vector((nextVec.x * size) + size * 0.5, (nextVec.y * size) + size * 0.5, 0)
+		local cpos = self:GetPos()
+		self.TargetDestination = dest
+		if(cpos:Distance(dest) <= self.DestinationOffsetTolerance) then
+			self:OnDestinationArrived(currentPathData)
+			self.CurrentMoveIndex = math.min(self.CurrentMoveIndex + 1, #path)
+			self.TargetDestination = dest
+			if(self.CurrentMoveIndex != #path) then
+				self.SkipPremoveAnimation = true
+			end
+			return true
+		end
+	end
+
 	function ENT:CheckCancelVelocity()
 
 	end
@@ -342,7 +408,7 @@ if(CLIENT) then
 		if(self:IsMovingAnimation()) then
 			local pos = self:GetPos()
 			local dst = pos:Distance(self.TargetDestination)
-			local vecforward = Arknights.GetFixedMovingSpeed((self.moveSpeed * Arknights.Stage.GridSize) * Arknights.TimeScale)
+			local vecforward = Arknights.GetFixedMovingSpeed((self.moveSpeed * (Arknights.Stage.GridSize * 0.5)) * Arknights.TimeScale)
 			local vel = (self.TargetDestination - pos)
 			vel:Normalize()
 			vel = vel * vecforward
@@ -442,13 +508,30 @@ if(CLIENT) then
 		end
 	end
 
+	function ENT:CheckEnterDefendPoint()
+		local origin = Arknights.Stage.StructureOrigin
+		local size = Arknights.Stage.GridSize
+		local offs = size * 0.5
+		local entered = Arknights.IsCurrentGridDefendPoint(self.GridPos.x, self.GridPos.y)
+		local toGridCenter = self:GetPos():Distance(origin + Vector((self.GridPos.x * size) + offs, (self.GridPos.y * size) + offs, 0)) < self.DestinationOffsetTolerance
+		if(toGridCenter && entered) then
+			self.EnteredDefendPoint = true
+			self.StartFadingout = true
+			self.ColorFadingout = true
+			self.ColorVal = 155
+			Arknights.Stage.EnemyEnteredDefendPoint()
+		end
+	end
+
 	function ENT:Think()
-		if(self.Dead || !self.AnimTable_Backup || self.CurrentAnimation == self.AnimTable.start || self.StopThinkTime > Arknights.CurTime) then
+		if(self.Dead || !self.AnimTable_Backup || self.EnteredDefendPoint || self.CurrentAnimation == self.AnimTable.start || self.StopThinkTime > Arknights.CurTime) then
 			if(self.Alpha <= 0) then
 				self:Remove()
 			end
 			return
 		end
+		self:CheckEnterDefendPoint()
+		self:DecideNextDestination()
 		local pos = self:GetPos()
 		if(self.MoveToCursor) then
 			if(input.IsMouseDown(108)) then
@@ -553,22 +636,27 @@ if(CLIENT) then
 		end
 		::move::
 		if(self.TargetDestination && self.StayTime < Arknights.CurTime && !self:IsAttackingAnimation()) then
-			if(pos:Distance(self.TargetDestination) > 8 && !self.IsBlocked) then
+			if(pos:Distance(self.TargetDestination) > self.DestinationOffsetTolerance && !self.IsBlocked) then
 				self:Move()
 			else
-				if(self.CurrentAnimation != self.AnimTable.idle) then
-					if(self.AnimTable.move_pre) then
-						self.CurrentAnimation = self.AnimTable.move_end
-						if(self.AnimationFinished) then
+				if(!self.SkipPremoveAnimation) then
+					if(self.CurrentAnimation != self.AnimTable.idle) then
+						if(self.AnimTable.move_pre) then
+							self.CurrentAnimation = self.AnimTable.move_end
+							if(self.AnimationFinished) then
+								self.CurrentAnimation = self.AnimTable.idle
+							end
+						else
 							self.CurrentAnimation = self.AnimTable.idle
 						end
-					else
-						self.CurrentAnimation = self.AnimTable.idle
 					end
+				else
+					self.SkipPremoveAnimation = false
 				end
+				self.ArrivedDestination = true
 			end
 		else
-			self.ArrivedDestination = true
+			self.CurrentAnimation = self.AnimTable.idle
 		end
 		::eof::
 		self.AnimationFinished = false

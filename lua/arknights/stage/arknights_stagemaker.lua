@@ -19,6 +19,7 @@ function Arknights.SaveLevelData()
 		Enemies = Arknights.Stage.Enemies,
 		Paths = Arknights.Stage.Paths,
 		Spawns = Arknights.Stage.Spawns,
+		MaxTime = Arknights.Stage.MaxTime,
 		Structures = Arknights.Stage.Structures,
 		Structures_Details = Arknights.Stage.Structures_Details,
 		Background = Arknights.Stage.Background,
@@ -230,7 +231,8 @@ function Arknights.StageMaker.ClickedFunc(hold)
 			end
 		elseif(Arknights.StageMaker.SelectedMode == 4) then
 			if(hold) then return end
-			print("exec")
+			Arknights.StageMaker.EnemyPlacementPopup()
+			Arknights.StageMaker.SelectedEnemyPosition = {x = x, y = y}
 		end
 	else
 		if(Arknights.StageMaker.SelectedMode == 1) then

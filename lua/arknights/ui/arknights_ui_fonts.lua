@@ -285,3 +285,43 @@ surface.CreateFont("Arknights_Paused_0.5X", {
 	scanlines = 0,
 	antialias = true,
 })
+
+surface.CreateFont("Arknights_EnemyPlacement_0.5x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(8),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_EnemyPlacement_0.75x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(10),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_EnemyPlacement_1x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(12),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})
+
+surface.CreateFont("Arknights_EnemyPlacement_2x", {
+	font = "Bender",
+	extended = false,
+	size = AKScreenScaleH(18),
+	weight = 1000,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+})

@@ -8,10 +8,11 @@ Arknights.Stage.LookAt = nil
 
 Arknights.Stage.GridSize = 48
 Arknights.Stage.StructureID = 0
-Arknights.Stage.CurrentTime = 0
-Arknights.Stage.MaxTime = 0
+Arknights.Stage.CurrentTime = Arknights.Stage.CurrentTime || 0
+Arknights.Stage.MaxTime = Arknights.Stage.MaxTime || 0
 Arknights.Stage.StartTimer = true
 Arknights.Stage.ExtendHeight = 1
+Arknights.Stage.Health = 3
 
 Arknights.Stage.Music = Arknights.Stage.Music || "indust"
 Arknights.Stage.MapID = Arknights.Stage.MapID || "NULL"
@@ -78,6 +79,31 @@ function Arknights.RemoveDebugOperator()
 	AKT:Remove()
 end
 
+function Arknights.Stage.ClearAllEntities()
+	for k,v in ipairs(ents.GetAll()) do
+		if(!v.IsArknightsEntity) then continue end
+		v:Remove()
+	end
+end
+
+function Arknights.Stage.CreateEnemy(id, path, x, y)
+	local ent = ents.CreateClientside(id)
+	if(!IsValid(ent)) then
+		Error("Failed to create entity "..id..", Invalid enemy id or internal error?")
+		return
+	end
+	local path = Arknights.Stage.Paths[path]
+	local size = Arknights.Stage.GridSize
+	if(!path) then
+		Error("Failed to create entity "..id..", Invalid path id or internal error?")
+		return
+	end
+	ent:SetPos(Arknights.Stage.StructureOrigin + Vector(x * size, y * size, 0) + Vector(size * 0.5, size * 0.5, 0))
+	ent:Spawn()
+
+	ent.MovePath = path
+end
+
 function Arknights.DestroyAllStageMeshes()
 	for index1, data in pairs(Arknights.Stage.StructureMeshes) do
 		for index2, meshes in pairs(data) do
@@ -105,6 +131,13 @@ function Arknights.IsSelectedGridWalkable(x, y)
 		return true
 	end
 	return false
+end
+
+function Arknights.IsCurrentGridDefendPoint(x, y)
+	if(!Arknights.Stage.Spawns[x] || !Arknights.Stage.Spawns[x][y]) then
+		return false
+	end
+	return Arknights.Stage.Spawns[x][y].id == "homebase"
 end
 
 function Arknights.RebuildStageMeshes()
@@ -183,6 +216,7 @@ function Arknights.StartStage(stageData, editmode)
 	Arknights.Stage.LookAt = nil
 	Arknights.Stage.CurrentTime = 0
 	Arknights.Stage.MaxTime = 0
+	Arknights.Stage.Health = 3
 	Arknights.Stage.StartTimer = !editmode
 	for k,v in pairs(stageData) do
 		Arknights.Stage[k] = v
@@ -191,6 +225,13 @@ function Arknights.StartStage(stageData, editmode)
 	Arknights.RebuildStageMeshes()
 	Arknights.RebuildSpawnModelEntities()
 	Arknights.CreateStageUI()
+end
+
+function Arknights.Stage.EnemyEnteredDefendPoint()
+	if(!Arknights.Stage.Editmode) then
+		Arknights.PlaySound("sound/arknights/mp3/battle/b_ui/b_ui_alarmenter.mp3")
+		Arknights.Stage.Health = Arknights.Stage.Health - 1
+	end
 end
 
 local keydown = false

@@ -4,6 +4,7 @@ Arknights.CachedSpineAnimation = Arknights.CachedSpineAnimation || {}
 function Arknights.ClearCaches()
 	Arknights.CachedMaterial = {}
 	Arknights.CachedSpineAnimation = {}
+	Arknights.Portraits = {}
 end
 
 function Arknights.CacheSpineAnimations(basefolder, entityid)
@@ -57,3 +58,12 @@ function Arknights.GetCachedMaterial(material)
 	end
 	return Arknights.CachedMaterial[material]
 end
+
+function Arknights.CachePortraits()
+	local f = file.Find("materials/arknights/operators/portraits/*.png", "GAME")
+	for k,v in ipairs(f) do
+		local n = string.Replace(v, ".png", "")
+		Arknights.Portraits[n] = Material("materials/arknights/operators/portraits/"..v, "smooth")
+	end
+end
+Arknights.CachePortraits()

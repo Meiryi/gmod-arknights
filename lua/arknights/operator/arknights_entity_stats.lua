@@ -8,3 +8,46 @@ function Arknights.SetEnemyStats(ent)
 		ent["def_"..k] = v.m_value
 	end
 end
+
+function Arknights.GetEnemyName(index)
+	local stats = Arknights.EnemyStats[index]
+	if(!stats) then
+		return "NULL"
+	end
+	return stats[1].enemyData.name.m_value
+end
+
+local errMaterial = Material("arknights/torappu/common/empty_noback.png", "smooth")
+function Arknights.GetEntityPortraits(index)
+	local material = Arknights.Portraits[index]
+	if(!material) then
+		return errMaterial
+	end
+	return material
+end
+
+--[[
+	attack
+	magicRes
+	maxHP
+	attackSpeed
+	def
+	moveSpeed
+
+	classLevel
+
+	enemyRes ??
+	enemyDamageRes ??
+]]
+
+function Arknights.GetStatsRating(input, index)
+	for k,v in ipairs(Arknights.EnemyStatsRating) do
+		local t = v[index]
+		if(!t) then return "nil" end
+		local min, max = t.min, t.max
+		if(input >= min && input <= max) then
+			return v.classLevel
+		end
+	end
+	return "N"
+end
