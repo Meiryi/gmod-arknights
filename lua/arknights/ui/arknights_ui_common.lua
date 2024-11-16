@@ -783,7 +783,8 @@ end
 
 Arknights.FetchingPanel = Arknights.FetchingPanel || nil
 function Arknights.WaitingIndicator(supppressFallback)
-	local ui = Arknights.CreatePanel(Arknights.GameFrame, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local ui = Arknights.CreatePanel(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	ui:MakePopup()
 	local tall = 0
 	local target_tall = AKScrH() * 0.125
 	local alphamul = 0

@@ -8,10 +8,11 @@ local sd = {
 	tickup = "sound/arknights/mp3/g_ui/g_ui_tickup.mp3",
 }
 
-function Arknights.PlaySound(sd)
+function Arknights.PlaySound(sd, vol)
 	sound.PlayFile(sd, "noplay", function(station, errCode, errStr)
 		if(IsValid(station)) then
 			station:Play()
+			station:SetVolume(vol || 1)
 		end
 	end)
 end

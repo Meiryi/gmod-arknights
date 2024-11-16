@@ -74,10 +74,10 @@ local pathmat = Material("arknights/meiryi/arts/node/node_curr_trans.png", "smoo
 local pathbeammat = Material("arknights/torappu/arts/[uc]common/path_fx/mask_09.png")
 local warningmat = Material("arknights/torappu/common_icon/hard_warning_flag.png")
 local timedColor = Color(150, 255, 150, 255)
-function Arknights.RenderPathNode(path)
+function Arknights.RenderPathNode(path, ignoreSelectedPath, overrideOrigin)
 	local node = Arknights.Stage.Paths[path]
 	if(!node) then return end
-	local startpos = Arknights.StageMaker.SelectedEnemyPosition
+	local startpos = overrideOrigin || Arknights.StageMaker.SelectedEnemyPosition
 	local isair = Arknights.IsHighGround(node[1].vec.x, node[1].vec.y)
 	local origin = Arknights.Stage.StructureOrigin
 	local size = Arknights.Stage.GridSize
@@ -85,7 +85,7 @@ function Arknights.RenderPathNode(path)
 	local nodeset = false
 	local offset = Vector(0, 0, 0)
 	local startnode = node[1]
-	local diff = startnode.vec.x != startpos.x || startpos.y != startnode.vec.y
+	local diff = ((startnode.vec.x != startpos.x || startpos.y != startnode.vec.y) && !ignoreSelectedPath)
 	local color = Color(55, 255, 55, 155)
 	if(diff) then
 		color = Color(255, 0, 0, 255)
@@ -476,6 +476,7 @@ hook.Add("PreDrawOpaqueRenderables", "Arknights_PreDrawOpaqueRenderables", funct
 	render.Clear(0, 255, 0, 255)
 	cam.End2D()
 	]]
+	Arknights.RenderArknightsEntities()
 	if(!gameactive || Arknights.IsGameFrameVisible()) then return end
 	--[[
 		render.Clear(0, 0, 0, 0, true, true)

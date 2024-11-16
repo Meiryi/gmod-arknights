@@ -20,6 +20,10 @@ function Arknights.StageMaker.NewPathNode(x, y)
 			t2color = Color(255, 220, 0, 255),
 			tcolor = Color(0, 0, 0, 255),
 			condfunc = function(text)
+				if(Arknights.Stage.Paths[text]) then
+					Arknights.PopupNotify("This node path already exists!")
+					return false
+				end
 				return true
 			end,
 			passfunc = function(text)

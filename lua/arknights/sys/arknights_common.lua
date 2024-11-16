@@ -1,5 +1,7 @@
+local bypassUI = true
+
 function Arknights.GetFixedValue(input)
-    if(gui.IsGameUIVisible()) then
+    if(gui.IsGameUIVisible() && !bypassUI) then
         return input * 0
     end
     local target = 0.016666
@@ -7,7 +9,7 @@ function Arknights.GetFixedValue(input)
 end
 
 function Arknights.GetFixedMovingSpeed(input)
-    if(gui.IsGameUIVisible()) then
+    if(gui.IsGameUIVisible() && !bypassUI) then
         return input * 0
     end
     local target = 1

@@ -85,6 +85,7 @@ function Arknights.CreateLabelBG(parent, x, y, text, font, color, bgcolor, mat)
     local base = vgui.Create("DPanel", parent)
         base.oPos = Vector(x, y)
         base:SetPos(x, y)
+        base.bgcolor = bgcolor
         local extend_wide = side_margin * 2
         if(hasmaterial) then
             extend_wide = (side_margin * 3) + text_tall
@@ -92,7 +93,7 @@ function Arknights.CreateLabelBG(parent, x, y, text, font, color, bgcolor, mat)
         base:SetSize(text_wide + extend_wide + (edge_extend * 2), text_tall + (edge_extend * 2))
         local round = base:GetTall() * 0.2
         base.Paint = function()
-            draw.RoundedBox(round, 0, 0, base:GetWide(), base:GetTall(), bgcolor)
+            draw.RoundedBox(round, 0, 0, base:GetWide(), base:GetTall(), base.bgcolor)
         end
         local _, _, text = Arknights.CreateLabel(base, side_margin + edge_extend, edge_extend, text, font, color)
         if(hasmaterial) then

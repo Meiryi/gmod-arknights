@@ -55,12 +55,19 @@ function Arknights.CreateDebugEnemy(class)
 	AKTE:Spawn()
 end
 
-function Arknights.CreateDebugOperator()
+function Arknights.CreateDebugOperator(class, hside, vside, fside)
 	if(IsValid(AKT)) then
 		AKT:Remove()
 		return
 	end
-	AKT = ents.CreateClientside("arknights_operator_base")
+	AKT = ents.CreateClientside(class || "arknights_operator_base")
+	AKT.CurrentHorizontalSide = hside || 1
+	AKT.CurrentVerticalSide = vside || "front"
+	AKT.IdealHorizontalSide = AKT.CurrentHorizontalSide
+	AKT.IdealVerticalSide = AKT.CurrentVerticalSide
+	AKT.DeployedHorizontalSide = AKT.CurrentHorizontalSide
+	AKT.DeployedVerticalSide = AKT.CurrentVerticalSide
+	AKT.DeployedFacingSide = fside || 0
 	AKT:Spawn()
 end
 
@@ -89,13 +96,13 @@ end
 function Arknights.Stage.CreateEnemy(id, path, x, y)
 	local ent = ents.CreateClientside(id)
 	if(!IsValid(ent)) then
-		Error("Failed to create entity "..id..", Invalid enemy id or internal error?")
+		Error("Failed to create entity "..id..", Invalid enemy id or internal error?\n")
 		return
 	end
 	local path = Arknights.Stage.Paths[path]
 	local size = Arknights.Stage.GridSize
 	if(!path) then
-		Error("Failed to create entity "..id..", Invalid path id or internal error?")
+		Error("Failed to create entity "..id..", Invalid path id or internal error?\n")
 		return
 	end
 	ent:SetPos(Arknights.Stage.StructureOrigin + Vector(x * size, y * size, 0) + Vector(size * 0.5, size * 0.5, 0))

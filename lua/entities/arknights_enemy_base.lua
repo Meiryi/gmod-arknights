@@ -7,6 +7,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.WantsTranslucency = true
 ENT.IsArknightsEntity = true
+ENT.IsEnemy = true
 
 ENT.BaseFolder = "enemies"
 ENT.EntityID = "enemy_1038_lunmag_2"
@@ -69,7 +70,6 @@ ENT.IdealSide = 1
 ENT.CurrentSide = 1
 ENT.DrawingWidthScale = 1
 
-ENT.MoveToCursor = false
 ENT.AnimationFinished = false
 ENT.CanAttack = true
 ENT.CanBeBlocked = true
@@ -128,6 +128,7 @@ ENT.AttackProjectileEntity = ""
 
 ENT.DebugInfo = false
 ENT.Debug_DrawPath = false
+ENT.MoveToCursor = true
 
 ENT.CurrentMoveIndex = 1
 ENT.DestinationOffsetTolerance = 4
@@ -217,8 +218,7 @@ if(CLIENT) then
 		local pos = self:GetPos()
 		local size = Arknights.Stage.GridSize
 
-		self.GridPos.x = math.floor((pos.x - origin.x) / size)
-		self.GridPos.y = math.floor((pos.y - origin.y) / size)
+		self.GridPos = Vector(math.floor((pos.x - origin.x) / size), math.floor((pos.y - origin.y) / size), 0)
 	end
 
 	local renderNormal = Vector(1, 0, 0)--Vector(0.819152, 0.000000, 0.5735767)
@@ -290,10 +290,11 @@ if(CLIENT) then
 		surface.SetDrawColor(clr, clr, clr, self.Alpha)
 		surface.SetMaterial(self.Animations["front"][self.CurrentAnimation][self.AnimationFrame])
 		self:CustomOnPaintWorld(size_y, size, color)
-		local angle = Angle(0, 90, 45)
+		local angle = Angle(0, 90, 90) -- 0 90 45
+		local offset = Vector(8, 0, 0)
 		cam.IgnoreZ(true)
 		render.SetColorMaterial()
-		cam.Start3D2D(pos + self.RenderOffset, angle, 1)
+		cam.Start3D2D(pos + self.RenderOffset + offset, angle, 1)
 			if(self.CurrentSide == 1) then
 				surface.DrawTexturedRectUV(-sizehalf, -size_y, size, size_y, 0, 0, 1, 1)
 			else
@@ -636,7 +637,7 @@ if(CLIENT) then
 		end
 		::move::
 		if(self.TargetDestination && self.StayTime < Arknights.CurTime && !self:IsAttackingAnimation()) then
-			if(pos:Distance(self.TargetDestination) > self.DestinationOffsetTolerance && !self.IsBlocked) then
+			if(pos:Distance(self.TargetDestination) > (self.DestinationOffsetTolerance * 0.75) && !self.IsBlocked) then
 				self:Move()
 			else
 				if(!self.SkipPremoveAnimation) then
@@ -671,6 +672,7 @@ if(CLIENT) then
 	function ENT:Initialize()
 		Arknights.AddManualPainting(self)
 		Arknights.SetEnemyStats(self)
+		Arknights.AddEnemyToList(self)
 	end
 else
 	function ENT:Initialize()

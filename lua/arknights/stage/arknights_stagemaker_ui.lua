@@ -251,11 +251,12 @@ local statsList = {
 }
 
 local eBrowser = nil
-function Arknights.StageMaker.EnemyBrowser()
+function Arknights.StageMaker.EnemyBrowser(clickfunc)
 	if(#Arknights.StageMaker.CachedUsableEnemies <= 0) then
 		Arknights.StageMaker.CacheEnemies()
 	end
 	if(IsValid(eBrowser)) then
+		eBrowser.func = clickfunc
 		eBrowser:SetVisible(true)
 		eBrowser.ui.Alpha = 1
 		eBrowser.ui.Exiting = false
@@ -263,8 +264,9 @@ function Arknights.StageMaker.EnemyBrowser()
 		return
 	end
 	local side = 0.125
-	local basepnl = Arknights.CreateFrame(nil, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local basepnl = Arknights.CreateFrame(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 		basepnl:MakePopup()
+		basepnl.func = clickfunc
 	local ui = Arknights.CreateFrame(basepnl, AKScrW() * side, AKScrH() * side, AKScrW() * (1 - side * 2), AKScrH() * (1 - side * 2), Color(30, 30, 30, 255))
 		ui.Alpha = 0
 		ui.Exiting = false
@@ -322,7 +324,7 @@ function Arknights.StageMaker.EnemyBrowser()
 				end
 
 				local InvisButton = Arknights.InvisButton(pnl, 0, 0, pnl:GetWide(), pnl:GetTall(), function()
-					Arknights.StageMaker.SelectedEnemy = v
+					basepnl.func(v)
 					ui.Exiting = true
 					Arknights.ButtonClickSound("select")
 				end)
@@ -363,13 +365,141 @@ function Arknights.StageMaker.EnemyUpdated()
 
 end
 
+local viewAlpha = 75
 function Arknights.StageMaker.EnemyList()
 	local ui = Arknights.CreateFrame(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 		ui.Alpha = 0
 		ui.Exiting = false
 		ui:SetAlpha(0)
 		ui:MakePopup()
-		ui.Think = function()
+
+		local margin = AKScreenScaleH(8)
+		local textmargin = AKScreenScaleH(6)
+		local dockmargin = AKScreenScaleH(2)
+		local vertical_margin = AKScrH() * 0.2
+		local horizontal_margin = AKScrW() * 0.2
+		local inner = Arknights.CreatePanelMat(ui, horizontal_margin, vertical_margin, AKScrW() - (horizontal_margin * 2), AKScrH() - (vertical_margin * 2), Arknights.GetCachedMaterial("arknights/torappu/bg/bg9.png"),Color(50, 50, 50, 255))
+
+		local label = Arknights.CreateLabelBG(inner, margin, margin, "Enemy List", "Arknights_Popup_1x", Color(0, 0, 0, 255), Color(66, 194, 245, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/sprite_kill.png"))
+
+		local upMargin = label:GetY() + label:GetTall()
+		local scroll = Arknights.CreateScroll(inner, margin, upMargin + margin, inner:GetWide() - margin * 2, inner:GetTall() - (margin * 2 + upMargin), Color(20, 20, 20, 125))
+		local list = {}
+		local vec = {x = 0, y = 0}
+		local renderPath = nil
+		local dropdown = nil
+		local btnSize = AKScreenScaleH(16)
+
+		local c1, c2 = Color(100, 100, 100, 255), Color(40, 40, 40, 255)
+		local hoveredfunc = function(self)
+			if(self:IsHovered()) then
+				self.bgcolor = c1
+			else
+				self.bgcolor = c2
+			end
+		end
+
+		scroll.UpdateList = function()
+			list = {}
+			scroll:Clear()
+			for index, enemy in ipairs(Arknights.Stage.Enemies) do
+				enemy.index = index
+				table.insert(list, enemy)
+			end
+			table.sort(list, function(a, b) return a.time < b.time end)
+			
+			for _, enemy in ipairs(list) do
+				local pnl = Arknights.CreatePanel(scroll, 0, 0, scroll:GetWide(), scroll:GetTall() * 0.15, Color(20, 20, 20, 255))
+					pnl:Dock(TOP)
+					pnl:DockMargin(0, 0, 0, dockmargin)
+					local portraits = Arknights.CreatePanelMat(pnl, 0, 0, pnl:GetTall(), pnl:GetTall(), Arknights.GetEntityPortraits(enemy.id))
+					local nick = Arknights.CreateLabelBG(pnl, dockmargin + portraits:GetWide(), dockmargin, Arknights.GetEnemyName(enemy.id), "Arknights_EnemyPlacement_1x", Color(255, 255, 2555, 255), Color(40, 40, 40, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/icon_input.png"))
+					local label = Arknights.CreateLabelBG(pnl, nick:GetX(), 0, "Spawn after "..enemy.time.." seconds", "Arknights_EnemyPlacement_0.75x", Color(255, 255, 2555, 255), Color(40, 40, 40, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/icon_input.png"))
+					label:SetY(pnl:GetTall() - (dockmargin + label:GetTall()))
+					local label2 = Arknights.CreateLabelBG(pnl, Arknights.GetGUINextPos(label).x + textmargin, label:GetY(), "Path : "..enemy.path, "Arknights_EnemyPlacement_0.75x", Color(255, 255, 255, 255), Color(40, 40, 40, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/icon_input.png"))
+					local delete = Arknights.CreateMatButton(pnl, pnl:GetWide() - (btnSize + margin), pnl:GetTall() * 0.5 - btnSize * 0.5, btnSize, btnSize, Arknights.GetCachedMaterial("arknights/torappu/common_icon/btn_icon_cancel.png"), function()
+						table.remove(Arknights.Stage.Enemies, enemy.index)
+						scroll.UpdateList()
+						Arknights.StageMaker.CalculateStageMaxTime()
+						Arknights.SaveLevelData()
+						Arknights.ButtonClickSound("select")
+					end)
+
+					function nick:OnMousePressed()
+						Arknights.StageMaker.EnemyBrowser(function(ret)
+							Arknights.Stage.Enemies[enemy.index].id = ret
+							scroll.UpdateList()
+							Arknights.SaveLevelData()
+						end)
+						Arknights.ButtonClickSound("select")
+					end
+					function label:OnMousePressed()
+						Arknights.PopupTextEntryMenu({
+							t1 = "Spawn Time",
+							t2 = "Time for enemy to spawn",
+							ptext = "Any number",
+							t1color = Color(130, 130, 130, 255),
+							t2color = Color(255, 220, 0, 255),
+							tcolor = Color(0, 0, 0, 255),
+							condfunc = function(text)
+								local num = tonumber(text)
+								if(!num) then
+									Arknights.PopupNotify("Invalid number")
+									return
+								end
+								if(num < 0) then
+									Arknights.PopupNotify("Number must be greater than 0")
+									return
+								end
+								return true
+							end,
+							passfunc = function(text)
+								local num = tonumber(text)
+								Arknights.Stage.Enemies[enemy.index].time = num
+								Arknights.StageMaker.CalculateStageMaxTime()
+								Arknights.SaveLevelData()
+								scroll.UpdateList()
+							end
+						})
+						Arknights.ButtonClickSound("select")
+					end
+					function label2:OnMousePressed()
+						vec = enemy.pos
+						local x, y = pnl:LocalToScreen(0, 0)
+						dropdown = Arknights.PathDropdown(pnl, x, y, pnl:GetWide(), AKScreenScaleH(128), function(ret)
+							Arknights.Stage.Enemies[enemy.index].path = ret
+						end)
+						Arknights.ButtonClickSound("select")
+					end
+					pnl.Think = function()
+						if(pnl.CurrentSelectedNode) then
+							renderPath = pnl.CurrentSelectedNode
+							pnl.CurrentSelectedNode = nil
+						end
+					end
+					nick.Think = hoveredfunc
+					label.Think = hoveredfunc
+					label2.Think = function()
+						if(label2:IsHovered()) then
+							renderPath = enemy.path
+						end
+						hoveredfunc(label2)
+					end
+			end
+		end
+
+		scroll.Think = function()
+			if(!scroll.Reload) then return end
+			scroll.UpdateList()
+			scroll.Reload = true
+		end
+		scroll.UpdateList()
+
+		function ui:OnMousePressed()
+			ui.Exiting = true
+		end
+
+		ui.Paint = function()
 			Arknights.StageMaker.StopClickTime = SysTime() + 0.25
 			if(ui.Exiting) then
 				ui.Alpha = math.Clamp(ui.Alpha - Arknights.GetFixedValue(15), 0, 255)
@@ -378,26 +508,26 @@ function Arknights.StageMaker.EnemyList()
 					return
 				end
 			else
-				ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue(15), 0, 255)
+				if(renderPath) then
+					ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue((viewAlpha - ui.Alpha) * 0.2), 0, 255)
+				else
+					ui.Alpha = math.Clamp(ui.Alpha + Arknights.GetFixedValue(15), 0, 255)
+				end
 			end
 			ui:SetAlpha(ui.Alpha)
+			local valid = IsValid(dropdown)
+			if(renderPath) then
+				cam.Start3D()
+					if(valid) then
+						dropdown:SetAlpha(ui.Alpha)
+						Arknights.RenderPathNode(renderPath, false, vec)
+					else
+						Arknights.RenderPathNode(renderPath, true)
+					end
+				cam.End3D()
+			end
+			renderPath = nil
 		end
-
-		ui.Paint = function()
-
-		end
-
-		function ui:OnMousePressed()
-			ui.Exiting = true
-		end
-
-		local margin = AKScreenScaleH(8)
-		local vertical_margin = AKScrH() * 0.2
-		local horizontal_margin = AKScrW() * 0.2
-		local inner = Arknights.CreatePanelMat(ui, horizontal_margin, vertical_margin, AKScrW() - (horizontal_margin * 2), AKScrH() - (vertical_margin * 2), Arknights.GetCachedMaterial("arknights/torappu/bg/bg9.png"),Color(50, 50, 50, 255))
-
-		Arknights.CreateLabelBG(inner, margin, margin, "Enemy List", "Arknights_Popup_1x", Color(0, 0, 0, 255), Color(66, 194, 245, 255), Arknights.GetCachedMaterial("arknights/torappu/common_icon/sprite_kill.png"))
-
 end
 
 function Arknights.StageMaker.CreateEnemyPreview(ui, autosize)
@@ -417,7 +547,9 @@ function Arknights.StageMaker.CreateEnemyPreview(ui, autosize)
 	local buttonheight = basepnl:GetTall() - (name:GetTall() + (innerspacing * 2))
 	local x = size + innerspacing * 2
 	local browseButton = Arknights.CreateButton(basepnl, x, basepnl:GetTall() - (buttonheight + innerspacing), basepnl:GetWide() - (size + innerspacing * 3), buttonheight, "Browse Enemies", "Arknights_StageMaker_1x", Color(255, 255, 255, 255), Color(20, 20, 20, 255), function()
-		Arknights.StageMaker.EnemyBrowser()
+		Arknights.StageMaker.EnemyBrowser(function(ret)
+			Arknights.StageMaker.SelectedEnemy = ret
+		end)
 		Arknights.ButtonClickSound("select")
 	end)
 
@@ -426,7 +558,7 @@ end
 
 local selectedAlpha = 30
 local lerpMul = 0.2
-function Arknights.PathDropdown(parent, x, y, w, h)
+function Arknights.PathDropdown(parent, x, y, w, h, func)
 	local elemHeight = AKScreenScaleH(24)
 	local margin = AKScreenScaleH(4)
 	local popup = Arknights.CreateFrame(nil, x, y, w, 0, Color(30, 30, 30, 255))
@@ -474,10 +606,8 @@ function Arknights.PathDropdown(parent, x, y, w, h)
 			pnl:DockMargin(0, 0, 0, margin)
 			local _, _, t = Arknights.CreateLabel(pnl, pnl:GetWide() * 0.5, pnl:GetTall() * 0.5, k.." ["..connections.." Connections]", "Arknights_StageMaker_1x", Color(255, 255, 255, 255))
 			t.CentPos()
-
-
 			local btn = Arknights.InvisButton(pnl, 0, 0, pnl:GetWide(), pnl:GetTall(), function()
-				Arknights.StageMaker.SelectedEnemyPath = k
+				func(k)
 				popup.Exiting = true
 				Arknights.ButtonClickSound("select")
 			end)
@@ -519,7 +649,9 @@ function Arknights.CreatePathSelector(ui, autosize)
 	local dropdown = nil
 	local btn = Arknights.InvisButton(basepnl, 0, 0, basepnl:GetWide(), basepnl:GetTall(), function()
 		local x, y = basepnl:LocalToScreen(0, 0)
-		dropdown = Arknights.PathDropdown(basepnl, x, y, basepnl:GetWide(), AKScreenScaleH(128))
+		dropdown = Arknights.PathDropdown(basepnl, x, y, basepnl:GetWide(), AKScreenScaleH(200), function(ret)
+			Arknights.StageMaker.SelectedEnemyPath = ret
+		end)
 		Arknights.ButtonClickSound("select")
 	end)
 	basepnl.top = btn
@@ -643,7 +775,7 @@ function Arknights.StageMaker.MaterialBrowser(baseui)
 		Arknights.StageMaker.MaterialBrowserPanel:Remove()
 	end
 	local side = 0.125
-	local basepnl = Arknights.CreateFrame(nil, 0, 0, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
+	local basepnl = Arknights.CreateFrame(nil, 0, AKHOFFS, AKScrW(), AKScrH(), Color(0, 0, 0, 0))
 		basepnl:MakePopup()
 	local ui = Arknights.CreateFrame(basepnl, AKScrW() * side, AKScrH() * side, AKScrW() * (1 - side * 2), AKScrH() * (1 - side * 2), Color(30, 30, 30, 255))
 		ui.Alpha = 0
@@ -809,7 +941,7 @@ function Arknights.StageMaker.CreateVariableSwitch(ui, settings, var)
 end
 
 function Arknights.StageMaker.CreateButton(ui, text, func)
-	local basepnl = Arknights.CreatePanel(ui, 0, 0, ui:GetWide(), AKScreenScaleH(24), Color(30, 30, 30, 255))
+	local basepnl = Arknights.CreatePanel(ui, 0, 0, ui:GetWide() - (spacing * 2), AKScreenScaleH(24), Color(30, 30, 30, 255))
 		basepnl:Dock(TOP)
 		basepnl:DockMargin(spacing, 0, 0, spacing)
 		local _, _, label = Arknights.CreateLabel(basepnl, basepnl:GetWide() * 0.5, basepnl:GetTall() * 0.5, text, "Arknights_StageMaker_0.5x", Color(255, 255, 255, 255))

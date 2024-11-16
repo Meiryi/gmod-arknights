@@ -5,6 +5,8 @@ Arknights.TimeScale = 1
 Arknights.Version = "dev"
 Arknights.EnemyStats = Arknights.EnemyStats || {}
 Arknights.EnemyDatas = Arknights.EnemyDatas || {}
+Arknights.OperatorDatas = Arknights.OperatorDatas || {}
+Arknights.OperatorRanges = Arknights.OperatorRanges || {}
 Arknights.EnemyStatsRating = Arknights.EnemyStatsRating || {}
 Arknights.DataInited = Arknights.DataInited || false
 Arknights.Portraits = Arknights.Portraits || {}
@@ -47,6 +49,11 @@ if(CLIENT) then -- This is a fully clientsided game, don't need to create dircto
 	file.CreateDir("arknights/batching")
 	local reload = true
 	if(!Arknights.DataInited || reload) then
+		local data = util.JSONToTable(file.Read("data_static/arknights/character_table.json", "GAME"), true)
+		Arknights.OperatorDatas = data
+		local data = util.JSONToTable(file.Read("data_static/arknights/range_table.json", "GAME"), true)
+		Arknights.OperatorRanges = data
+
 		local data = util.JSONToTable(file.Read("data_static/arknights/enemy_database.json", "GAME"), true)
 		Arknights.EnemyStats = data
 		local data = util.JSONToTable(file.Read("data_static/arknights/enemy_handbook_table.json", "GAME"), true)

@@ -2,8 +2,9 @@ Arknights.WarningPanel = Arknights.WarningPanel || nil
 Arknights.UnAffectedCurTime = Arknights.UnAffectedCurTime || 0
 ARKNIGHTS_LASTFRAMETIME = 0.001
 
-local forcePause = true
+local forcePause = false
 local forcePopup = false
+local forceRun = true
 local timeoffs = 0
 local ptime = SysTime()
 hook.Add("DrawOverlay", "Arknights_TimeSys", function()
@@ -11,7 +12,9 @@ hook.Add("DrawOverlay", "Arknights_TimeSys", function()
 		if(IsValid(Arknights.WarningPanel)) then
 			Arknights.WarningPanel:Remove()
 		end
-		return
+		if(!forceRun) then
+			return
+		end
 	end
 	local paused = gui.IsGameUIVisible()
 	local t = (SysTime() - ptime)
