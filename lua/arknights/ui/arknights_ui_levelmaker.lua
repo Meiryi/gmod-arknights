@@ -84,6 +84,7 @@ function Arknights.LevelMakerUI()
 						midloading = function()
 							Arknights.StageMaker.GetMaterials()
 							Arknights.StageMaker.CacheMaterial()
+							Arknights.CacheEnemySprites(levelData)
 						end,
 						finishedloading = function()
 							Arknights.StartStage(levelData, true)

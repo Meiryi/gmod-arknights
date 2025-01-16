@@ -280,7 +280,7 @@ if(CLIENT) then
 		surface.SetDrawColor(clr, clr, clr, self.Alpha)
 		surface.SetMaterial(self.Animations[self.CurrentVerticalSide][self.CurrentAnimation][self.AnimationFrame])
 		self:CustomOnPaintWorld(size_y, size, color)
-		local angle = Angle(0, 90, 90)
+		local angle = Angle(0, 90, 45)
 		local offset = Vector(8, 0, 0)
 		cam.IgnoreZ(true)
 		render.SetColorMaterial()
@@ -322,6 +322,17 @@ if(CLIENT) then
 					--render.DrawQuadEasy(pos, renderNormal, size, size, Color(255, 0, 0, 255), 0)
 					surface.DrawTexturedRectUV(vec.x - sizehalf, vec.y - sizehalf, size, size, u1, v1, u2, v2)
 				end
+
+				--[[
+				for _, aabb in ipairs(self.AttackRangeAABBs) do
+					local aa = aabb.mins - selfPos
+					local bb = aabb.maxs - selfPos
+					aa = Vector(aa.y, aa.x, aa.z)
+					bb = Vector(bb.y, bb.x, bb.z)
+
+					render.DrawWireframeBox(selfPos, Angle(0, 0, 0), aa, bb, Color(255, 0, 255, 255), true)
+				end
+				]]
 			cam.End3D2D()
 		end
 		cam.IgnoreZ(false)
@@ -374,17 +385,17 @@ if(CLIENT) then
 			self:Attack()
 			if(self:IsIdleAnimation() && !self:IsAttackingAnimation()) then
 				self:DecideSide(self.Enemies[1]:GetPos())
-				if(self.NextAttackTime < CurTime()) then
+				if(self.NextAttackTime < Arknights.CurTime) then
 					if(self.AnimTable.attack_pre) then
 						if(self.CurrentAnimation != self.AnimTable.attack_loop) then
 							self.CurrentAnimation = self.AnimTable.attack_pre
 						else
 							self.CurrentAnimation = self.AnimTable.attack_loop
-							self.NextAttackTime = Arknights.CurTime + (self.baseAttackTime + self:GetAnimationLength("attack_loop"))
+							self.NextAttackTime = Arknights.CurTime + (self.baseAttackTime)
 						end
 					else
 						self.CurrentAnimation = self.AnimTable.attack_loop
-						self.NextAttackTime = Arknights.CurTime + (self.baseAttackTime + self:GetAnimationLength("attack_loop"))
+						self.NextAttackTime = Arknights.CurTime + (self.baseAttackTime)
 					end
 				end
 			else

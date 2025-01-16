@@ -1341,6 +1341,13 @@ function Arknights.CreateStageUI()
 			indicatedPath = {}
 			Arknights.Stage.CurrentTime = fraction * Arknights.Stage.MaxTime
 			Arknights.Stage.ClearAllEntities()
+			local currentTime = Arknights.Stage.CurrentTime
+			for k,v in ipairs(Arknights.Stage.Enemies) do
+				if(v.time < currentTime) then
+					v.spawned = true
+					continue
+				end
+			end
 			Arknights.ButtonClickSound("switch")
 		end
 		buttonLayer.Alpha = 0

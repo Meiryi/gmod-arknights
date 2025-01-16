@@ -463,7 +463,9 @@ function Arknights.HomePage()
 		y2 = AKScrH() * 0.5825,
 	}, function()
 		if(!ui.Active || Arknights.IsWaitingRespond()) then return end
+		ui.Active = false
 		Arknights.ButtonClickSound("select")
+		Arknights.SquadUI(ui)
 	end))
 	local w = AKScrW() * 0.1065
 	local h = w * 0.725

@@ -216,6 +216,13 @@ function Arknights.RemoveOutOfBoundsStructure()
 	end
 end
 
+function Arknights.CacheEnemySprites(stageData)
+	--Arknights.CacheSpineAnimations(basefolder, entityid)
+	for _, enemy in ipairs(stageData.Enemies) do
+		Arknights.CacheSpineAnimations("enemies", enemy.id)
+	end
+end
+
 function Arknights.StartStage(stageData, editmode)
 	if(!stageData || !istable(stageData)) then return end
 	Arknights.Stage.Editmode = editmode
